@@ -1,91 +1,120 @@
 const fs = require("fs");
 const { parse } = require("./parser/parse");
-const { renderNode } = require("./renderer/render");
+const { render } = require("./renderer/render");
 
-// 1. Read input
+// 📥 READ
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 2. Parse
+// 🧠 PARSE (DO NOT TOUCH STRUCTURE)
 const result = parse(input);
 
-const tree = result.tree;
-const theme = result.theme;
+// ⚠️ Support BOTH formats (array OR tree)
+let tree;
+let theme = null;
 
-// DEBUG (keep while developing)
-console.log(JSON.stringify(result, null, 2));
+if (Array.isArray(result)) {
+    // old parser
+    tree = {
+        type: "column",
+        children: result
+    };
+} else {
+    // new parser
+    tree = result.tree || result;
+    theme = result.theme || null;
+}
 
-// 3. Render UI
-const body = renderNode(tree);
+// 🎨 RENDER
+const body = render(tree, { theme });
 
-// 4. Apply theme class
-const themeClass = theme ? `theme-${theme}` : "";
+// 🎨 CSS (UPGRADED UI)
+const styles = `
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+}
 
-// 5. Full HTML
-const fullHTML = `
+/* APP WRAPPER */
+.app {
+    min-height: 100vh;
+}
+
+/* DARK THEME */
+.dark {
+    background: #0f0f0f;
+    color: white;
+}
+
+/* LIGHT THEME */
+.light {
+    background: #ffffff;
+    color: black;
+}
+
+/* LAYOUT */
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+.center {
+    align-items: center;
+}
+
+/* TEXT */
+.kv-text {
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* BUTTON */
+.kv-button {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.kv-button:hover {
+    transform: translateY(-2px);
+}
+
+/* IMAGE (future ready) */
+.kv-image {
+    max-width: 100%;
+    border-radius: 10px;
+}
+</style>
+`;
+
+// 📦 HTML
+const html = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover Output</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-        }
-
-        .column {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .row {
-            display: flex;
-            flex-direction: row;
-            gap: 12px;
-        }
-
-        .center {
-            align-items: center;
-        }
-
-        /* STYLE TOKENS */
-        .heading {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .primary {
-            background: #4f46e5;
-            color: white;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-        }
-
-        .hero {
-            width: 100%;
-            border-radius: 10px;
-        }
-
-        /* THEMES */
-        .theme-dark {
-            background: #111;
-            color: white;
-        }
-
-        .theme-light {
-            background: white;
-            color: black;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Klover</title>
+${styles}
 </head>
-<body class="${themeClass}">
+<body>
 ${body}
 </body>
 </html>
 `;
 
-// 6. Write output
-fs.writeFileSync("output.html", fullHTML);
+// 💾 WRITE
+fs.writeFileSync("output.html", html);
 
-console.log("✅ output.html generated");
+console.log("✅ Renderer V2 ready!");
