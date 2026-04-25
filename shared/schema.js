@@ -28,11 +28,17 @@ function createTheme(value) {
         value
     };
 }
+
+function createComponent(name, props = []) {
+    return { type: "component", name, props };
+}
+
 module.exports = {
     createText,
     createButton,
     createColumn,
     createRow,
     createImage,
-    createTheme
+    createTheme,
+    createComponent
 };
