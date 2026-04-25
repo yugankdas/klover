@@ -2,119 +2,47 @@ const fs = require("fs");
 const { parse } = require("./parser/parse");
 const { render } = require("./renderer/render");
 
-// 📥 READ
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 🧠 PARSE (DO NOT TOUCH STRUCTURE)
 const result = parse(input);
 
-// ⚠️ Support BOTH formats (array OR tree)
-let tree;
-let theme = null;
+const tree = result.tree;
+const theme = result.theme;
+const components = result.components;
 
-if (Array.isArray(result)) {
-    // old parser
-    tree = {
-        type: "column",
-        children: result
-    };
-} else {
-    // new parser
-    tree = result.tree || result;
-    theme = result.theme || null;
-}
+const body = render(tree, {
+    theme,
+    components
+});
 
-// 🎨 RENDER
-const body = render(tree, { theme });
-
-// 🎨 CSS (UPGRADED UI)
 const styles = `
 <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-}
+body { margin: 0; font-family: sans-serif; }
 
-/* APP WRAPPER */
-.app {
-    min-height: 100vh;
-}
+.app { padding: 40px; }
 
-/* DARK THEME */
-.dark {
-    background: #0f0f0f;
-    color: white;
-}
+.dark { background: #111; color: white; }
 
-/* LIGHT THEME */
-.light {
-    background: #ffffff;
-    color: black;
-}
+.column { display: flex; flex-direction: column; gap: 20px; }
+.row { display: flex; gap: 10px; }
 
-/* LAYOUT */
-.column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 40px;
-}
+.center { align-items: center; }
 
-.row {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-}
+.heading { font-size: 28px; font-weight: bold; }
 
-.center {
-    align-items: center;
-}
+.kv-button { padding: 10px; border-radius: 8px; background: green; color: white; }
 
-/* TEXT */
-.kv-text {
-    font-size: 18px;
-    line-height: 1.5;
-}
-
-/* BUTTON */
-.kv-button {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    background: #4CAF50;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.kv-button:hover {
-    transform: translateY(-2px);
-}
-
-/* IMAGE (future ready) */
-.kv-image {
-    max-width: 100%;
-    border-radius: 10px;
-}
+.kv-image { max-width: 100%; border-radius: 10px; }
 </style>
 `;
 
-// 📦 HTML
 const html = `
-<!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>Klover</title>
-${styles}
-</head>
-<body>
-${body}
-</body>
+<head>${styles}</head>
+<body>${body}</body>
 </html>
 `;
 
-// 💾 WRITE
 fs.writeFileSync("output.html", html);
 
-console.log("✅ Renderer V2 ready!");
+console.log("✅ Build complete");

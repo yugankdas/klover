@@ -1,82 +1,58 @@
-function renderNode(node, components = {}, props = {}) {
+function renderNode(node, components) {
     if (!node) return "";
 
-    // -------------------------
+    // 🧩 COMPONENT
+    if (node.type === "component") {
+        const comp = components[node.name];
+        if (!comp || !comp.root) return "";
+        return renderNode(comp.root, components);
+    }
+
     // TEXT
-    // -------------------------
     if (node.type === "text") {
-        let value = node.value;
-
-        // variable resolution
-        if (node.isVariable) {
-            value = props[value] || "";
-        }
-
-        return `<p class="${node.style || ""}">${value}</p>`;
+        return `<p class="kv-text ${node.style || ""}">${node.value}</p>`;
     }
 
-    // -------------------------
     // BUTTON
-    // -------------------------
     if (node.type === "button") {
-        const onClick = node.onClick
-            ? `onclick="console.log(${node.onClick})"`
-            : "";
-
-        return `<button class="${node.style || ""}" ${onClick}>
-            ${node.label}
-        </button>`;
+        return `<button class="kv-button ${node.style || ""}">${node.label}</button>`;
     }
 
-    // -------------------------
     // IMAGE
-    // -------------------------
     if (node.type === "image") {
-        return `<img src="${node.src}" class="${node.style || ""}" />`;
+        return `<img src="${node.src}" class="kv-image ${node.style || ""}" />`;
     }
 
-    // -------------------------
     // COLUMN
-    // -------------------------
     if (node.type === "column") {
         return `
-        <div class="column ${node.align}">
-            ${node.children.map(child =>
-            renderNode(child, components, props)
-        ).join("")}
-        </div>`;
+        <div class="column ${node.align || ""}">
+            ${(node.children || []).map(child => renderNode(child, components)).join("")}
+        </div>
+        `;
     }
 
-    // -------------------------
     // ROW
-    // -------------------------
     if (node.type === "row") {
         return `
         <div class="row">
-            ${node.children.map(child =>
-            renderNode(child, components, props)
-        ).join("")}
-        </div>`;
-    }
-
-    // -------------------------
-    // COMPONENT
-    // -------------------------
-    if (node.type === "component") {
-        const comp = components[node.name];
-
-        if (!comp) return "";
-
-        // map props
-        const propMap = {};
-        comp.props.forEach((p, i) => {
-            propMap[p] = node.props[i];
-        });
-
-        return renderNode(comp.root, components, propMap);
+            ${(node.children || []).map(child => renderNode(child, components)).join("")}
+        </div>
+        `;
     }
 
     return "";
 }
 
-module.exports = { renderNode };
+function render(tree, options = {}) {
+    const content = renderNode(tree, options.components || {});
+    const themeClass = options.theme || "";
+
+    return `
+    <div class="app ${themeClass}">
+        ${content}
+    </div>
+    `;
+}
+
+module.exports = { render };
