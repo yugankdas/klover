@@ -1,19 +1,35 @@
-function render(elements) {
-    let html = `<div class="column">`;
+function renderNode(node) {
+    if (!node) return "";
 
-    for (let el of elements) {
-        if (el.type === "text") {
-            html += `<p class="kv-text">${el.value}</p>`;
-        }
-
-        if (el.type === "button") {
-            html += `<button class="kv-button">${el.label}</button>`;
-        }
+    // 🟡 TEXT
+    if (node.type === "text") {
+        return `<p class="kv-text">${node.value}</p>`;
     }
 
-    html += `</div>`;
+    // 🔵 BUTTON
+    if (node.type === "button") {
+        return `<button class="kv-button">${node.label}</button>`;
+    }
 
-    return html;
+    // 🟢 COLUMN
+    if (node.type === "column") {
+        return `
+        <div class="column ${node.align}">
+            ${node.children.map(renderNode).join("")}
+        </div>
+        `;
+    }
+
+    // 🔴 ROW
+    if (node.type === "row") {
+        return `
+        <div class="row">
+            ${node.children.map(renderNode).join("")}
+        </div>
+        `;
+    }
+
+    return "";
 }
 
-module.exports = { render };
+module.exports = { renderNode };
