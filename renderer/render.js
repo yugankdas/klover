@@ -1,57 +1,82 @@
-function renderNode(node) {
+function renderNode(node, components = {}, props = {}) {
     if (!node) return "";
 
-    // 🟡 TEXT
+    // -------------------------
+    // TEXT
+    // -------------------------
     if (node.type === "text") {
-        return `<p class="kv-text ${node.style || ""}">${node.value}</p>`;
+        let value = node.value;
+
+        // variable resolution
+        if (node.isVariable) {
+            value = props[value] || "";
+        }
+
+        return `<p class="${node.style || ""}">${value}</p>`;
     }
 
-    // 🔵 BUTTON
+    // -------------------------
+    // BUTTON
+    // -------------------------
     if (node.type === "button") {
-        return `<button class="kv-button ${node.style || ""}">${node.label}</button>`;
+        const onClick = node.onClick
+            ? `onclick="console.log(${node.onClick})"`
+            : "";
+
+        return `<button class="${node.style || ""}" ${onClick}>
+            ${node.label}
+        </button>`;
     }
 
-    // 🟢 COLUMN
+    // -------------------------
+    // IMAGE
+    // -------------------------
+    if (node.type === "image") {
+        return `<img src="${node.src}" class="${node.style || ""}" />`;
+    }
+
+    // -------------------------
+    // COLUMN
+    // -------------------------
     if (node.type === "column") {
         return `
-        <div class="column ${node.align || ""}">
-            ${(node.children || []).map(renderNode).join("")}
-        </div>
-        `;
+        <div class="column ${node.align}">
+            ${node.children.map(child =>
+            renderNode(child, components, props)
+        ).join("")}
+        </div>`;
     }
 
-    // 🔴 ROW
+    // -------------------------
+    // ROW
+    // -------------------------
     if (node.type === "row") {
         return `
         <div class="row">
-            ${(node.children || []).map(renderNode).join("")}
-        </div>
-        `;
+            ${node.children.map(child =>
+            renderNode(child, components, props)
+        ).join("")}
+        </div>`;
     }
 
-    // ⚠️ FUTURE-PROOF (unknown types like image/component)
-    if (node.type === "image") {
-        return `<img src="${node.src}" class="kv-image ${node.style || ""}" />`;
-    }
-
+    // -------------------------
+    // COMPONENT
+    // -------------------------
     if (node.type === "component") {
-        return `<!-- component ${node.name} not supported yet -->`;
+        const comp = components[node.name];
+
+        if (!comp) return "";
+
+        // map props
+        const propMap = {};
+        comp.props.forEach((p, i) => {
+            propMap[p] = node.props[i];
+        });
+
+        return renderNode(comp.root, components, propMap);
     }
 
     return "";
 }
 
-// Wrapper (for future theme support)
-function render(tree, options = {}) {
-    const content = renderNode(tree);
-
-    const themeClass = options.theme ? options.theme : "";
-
-    return `
-    <div class="app ${themeClass}">
-        ${content}
-    </div>
-    `;
-}
-
-module.exports = { render };
+module.exports = { renderNode };
