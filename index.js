@@ -5,11 +5,14 @@ const { render } = require("./renderer/render");
 // 1. Read input file
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 2. Parse input into structured data
-const elements = parse(input);
+const { renderNode } = require("./renderer/render");
 
-// 3. Render structured data into HTML body
-const body = render(elements);
+const tree = parse(input);
+
+// DEBUG — keep this while testing
+console.log(JSON.stringify(tree, null, 2));
+
+const body = renderNode(tree);
 
 // 4. Wrap into full HTML
 const fullHTML = `
