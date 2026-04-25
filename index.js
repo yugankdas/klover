@@ -1,27 +1,58 @@
 const fs = require("fs");
 const { parse } = require("./parser/parse");
-const { renderNode } = require("./renderer/render");
+const { render } = require("./renderer/render");
 
-// 📥 READ INPUT
+// 📥 READ
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 🧠 PARSE → TREE
-const tree = parse(input);
+// 🧠 PARSE (DO NOT TOUCH STRUCTURE)
+const result = parse(input);
 
-// 🎨 RENDER → HTML BODY
-const body = renderNode(tree);
+// ⚠️ Support BOTH formats (array OR tree)
+let tree;
+let theme = null;
 
-// 🎨 GLOBAL STYLES
+if (Array.isArray(result)) {
+    // old parser
+    tree = {
+        type: "column",
+        children: result
+    };
+} else {
+    // new parser
+    tree = result.tree || result;
+    theme = result.theme || null;
+}
+
+// 🎨 RENDER
+const body = render(tree, { theme });
+
+// 🎨 CSS (UPGRADED UI)
 const styles = `
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* APP WRAPPER */
+.app {
+    min-height: 100vh;
+}
+
+/* DARK THEME */
+.dark {
     background: #0f0f0f;
     color: white;
 }
 
-/* CONTAINER */
+/* LIGHT THEME */
+.light {
+    background: #ffffff;
+    color: black;
+}
+
+/* LAYOUT */
 .column {
     display: flex;
     flex-direction: column;
@@ -29,14 +60,12 @@ body {
     padding: 40px;
 }
 
-/* ROW */
 .row {
     display: flex;
     flex-direction: row;
     gap: 12px;
 }
 
-/* ALIGNMENT */
 .center {
     align-items: center;
 }
@@ -50,27 +79,33 @@ body {
 /* BUTTON */
 .kv-button {
     padding: 10px 16px;
-    border-radius: 6px;
+    border-radius: 8px;
     border: none;
     background: #4CAF50;
     color: white;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: 0.2s;
 }
 
 .kv-button:hover {
-    background: #45a049;
+    transform: translateY(-2px);
+}
+
+/* IMAGE (future ready) */
+.kv-image {
+    max-width: 100%;
+    border-radius: 10px;
 }
 </style>
 `;
 
-// 📦 FINAL HTML
+// 📦 HTML
 const html = `
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Klover Output</title>
+<title>Klover</title>
 ${styles}
 </head>
 <body>
@@ -79,7 +114,7 @@ ${body}
 </html>
 `;
 
-// 💾 WRITE OUTPUT
+// 💾 WRITE
 fs.writeFileSync("output.html", html);
 
-console.log("✅ HTML generated successfully!");
+console.log("✅ Renderer V2 ready!");
