@@ -2,34 +2,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover Output</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-        }
+<meta charset="UTF-8">
+<title>Klover Output</title>
 
-        .column {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: white;
+}
 
-        .kv-text {
-            font-size: 20px;
-        }
+/* CONTAINER */
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+}
 
-        .kv-button {
-            padding: 10px 16px;
-            border: none;
-            background: #4f46e5;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-    </style>
+/* ROW */
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+/* ALIGNMENT */
+.center {
+    align-items: center;
+}
+
+/* TEXT */
+.kv-text {
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* BUTTON */
+.kv-button {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.kv-button:hover {
+    background: #45a049;
+}
+</style>
+
 </head>
 <body>
-<div class="column"><p class="kv-text">Hello</p><button class="kv-button">Start</button></div>
+
+        <div class="column center">
+            <p class="kv-text">Welcome to Klover</p>
+        <div class="row">
+            <button class="kv-button">Login</button><button class="kv-button">Signup</button>
+        </div>
+        
+        <div class="column start">
+            <p class="kv-text">Features</p><p class="kv-text">Fast</p><p class="kv-text">Simple</p>
+        </div>
+        
+        </div>
+        
 </body>
 </html>

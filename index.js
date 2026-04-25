@@ -1,47 +1,77 @@
 const fs = require("fs");
 const { parse } = require("./parser/parse");
-const { render } = require("./renderer/render");
+const { renderNode } = require("./renderer/render");
 
-// 1. Read input file
+// 📥 READ INPUT
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 2. Parse input into structured data
-const elements = parse(input);
+// 🧠 PARSE → TREE
+const tree = parse(input);
 
-// 3. Render structured data into HTML body
-const body = render(elements);
+// 🎨 RENDER → HTML BODY
+const body = renderNode(tree);
 
-// 4. Wrap into full HTML
-const fullHTML = `
+// 🎨 GLOBAL STYLES
+const styles = `
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: white;
+}
+
+/* CONTAINER */
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 40px;
+}
+
+/* ROW */
+.row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+}
+
+/* ALIGNMENT */
+.center {
+    align-items: center;
+}
+
+/* TEXT */
+.kv-text {
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+/* BUTTON */
+.kv-button {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.kv-button:hover {
+    background: #45a049;
+}
+</style>
+`;
+
+// 📦 FINAL HTML
+const html = `
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover Output</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
-        }
-
-        .column {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .kv-text {
-            font-size: 20px;
-        }
-
-        .kv-button {
-            padding: 10px 16px;
-            border: none;
-            background: #4f46e5;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Klover Output</title>
+${styles}
 </head>
 <body>
 ${body}
@@ -49,7 +79,7 @@ ${body}
 </html>
 `;
 
-// 5. Write output file
-fs.writeFileSync("output.html", fullHTML);
+// 💾 WRITE OUTPUT
+fs.writeFileSync("output.html", html);
 
-console.log("✅ output.html generated");
+console.log("✅ HTML generated successfully!");
