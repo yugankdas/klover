@@ -1,51 +1,52 @@
-function renderNode(node) {
+function renderNode(node, components) {
     if (!node) return "";
 
-    // 🟡 TEXT
+    // 🧩 COMPONENT
+    if (node.type === "component") {
+        const comp = components[node.name];
+        if (!comp || !comp.root) return "";
+        return renderNode(comp.root, components);
+    }
+
+    // TEXT
     if (node.type === "text") {
         return `<p class="kv-text ${node.style || ""}">${node.value}</p>`;
     }
 
-    // 🔵 BUTTON
+    // BUTTON
     if (node.type === "button") {
         return `<button class="kv-button ${node.style || ""}">${node.label}</button>`;
     }
 
-    // 🟢 COLUMN
-    if (node.type === "column") {
-        return `
-        <div class="column ${node.align || ""}">
-            ${(node.children || []).map(renderNode).join("")}
-        </div>
-        `;
-    }
-
-    // 🔴 ROW
-    if (node.type === "row") {
-        return `
-        <div class="row">
-            ${(node.children || []).map(renderNode).join("")}
-        </div>
-        `;
-    }
-
-    // ⚠️ FUTURE-PROOF (unknown types like image/component)
+    // IMAGE
     if (node.type === "image") {
         return `<img src="${node.src}" class="kv-image ${node.style || ""}" />`;
     }
 
-    if (node.type === "component") {
-        return `<!-- component ${node.name} not supported yet -->`;
+    // COLUMN
+    if (node.type === "column") {
+        return `
+        <div class="column ${node.align || ""}">
+            ${(node.children || []).map(child => renderNode(child, components)).join("")}
+        </div>
+        `;
+    }
+
+    // ROW
+    if (node.type === "row") {
+        return `
+        <div class="row">
+            ${(node.children || []).map(child => renderNode(child, components)).join("")}
+        </div>
+        `;
     }
 
     return "";
 }
 
-// Wrapper (for future theme support)
 function render(tree, options = {}) {
-    const content = renderNode(tree);
-
-    const themeClass = options.theme ? options.theme : "";
+    const content = renderNode(tree, options.components || {});
+    const themeClass = options.theme || "";
 
     return `
     <div class="app ${themeClass}">
