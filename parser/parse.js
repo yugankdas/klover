@@ -3,48 +3,47 @@ const {
     createButton,
     createColumn,
     createRow,
-    createImage,
-    createComponent
+    createImage
 } = require("../shared/schema");
 
+
+// -----------------------------
+// CLEAN INPUT
+// -----------------------------
 function cleanLines(input) {
     return input
         .split("\n")
-        .map(line => line.replace(/\t/g, "    "))
-        .map(line => line.replace(/\r$/, ""))
-        .filter(line => line.trim().length > 0);
+        .map(line => line.replace(/\t/g, "    ")) // tabs → spaces
+        .map(line => line.replace(/\r$/, ""))     // remove Windows CR
+        .filter(line => line.trim().length > 0);  // remove empty lines
 }
 
+
+// -----------------------------
+// INDENTATION
+// -----------------------------
 function getIndent(line) {
     return line.match(/^ */)[0].length;
 }
 
+
+// -----------------------------
+// STYLE EXTRACTION
+// -----------------------------
 function extractStyle(parts) {
     return parts.length > 2 ? parts[2] : null;
 }
 
-function extractEvent(line) {
-    const match = line.match(/onClick=(.*)/);
-    return match ? match[1] : null;
-}
 
-function extractProps(line) {
-    const match = line.match(/\((.*?)\)/);
-    if (!match) return [];
-    return match[1]
-        .split(",")
-        .map(p => p.trim().replace(/"/g, ""));
-}
-
+// -----------------------------
+// MAIN PARSER
+// -----------------------------
 function parse(input) {
     const lines = cleanLines(input);
 
     const stack = [];
     let root = null;
     let theme = null;
-
-    const components = {};
-    let currentComponent = null;
 
     for (let line of lines) {
         let node = null;
@@ -53,49 +52,25 @@ function parse(input) {
         const parts = trimmed.split(" ");
 
         // -------------------------
-        // COMPONENT DEFINITION
-        // -------------------------
-        if (trimmed.startsWith("component")) {
-            const def = trimmed.replace("component", "").replace(":", "").trim();
-
-            const name = def.split("(")[0];
-            const props = extractProps(def);
-
-            currentComponent = {
-                name,
-                props,
-                root: null,
-                stack: []
-            };
-
-            continue;
-        }
-
-        // -------------------------
-        // THEME
+        // THEME (GLOBAL)
         // -------------------------
         if (trimmed.startsWith("theme")) {
-            if (parts[1]) theme = parts[1];
+            if (parts[1]) {
+                theme = parts[1];
+            }
             continue;
         }
 
         // -------------------------
-        // TEXT (supports variables)
+        // TEXT
         // -------------------------
         if (trimmed.startsWith("text")) {
             const match = trimmed.match(/"(.*?)"/);
-            const style = extractStyle(parts);
-
             if (match) {
+                const style = extractStyle(parts);
                 node = createText(match[1]);
-                node.isVariable = false;
-            } else {
-                const value = parts[1];
-                node = createText(value);
-                node.isVariable = true;
+                node.style = style;
             }
-
-            node.style = style;
         }
 
         // -------------------------
@@ -105,17 +80,13 @@ function parse(input) {
             const match = trimmed.match(/"(.*?)"/);
             if (match) {
                 const style = extractStyle(parts);
-                const event = extractEvent(trimmed);
-
                 node = createButton(match[1]);
                 node.style = style;
-
-                if (event) node.onClick = event;
             }
         }
 
         // -------------------------
-        // IMAGE
+        // IMAGE (NEW)
         // -------------------------
         else if (trimmed.startsWith("image")) {
             const match = trimmed.match(/"(.*?)"/);
@@ -142,63 +113,14 @@ function parse(input) {
         }
 
         // -------------------------
-        // COMPONENT USAGE WITH PROPS
+        // INVALID LINE → SKIP
         // -------------------------
-        else if (trimmed.includes("(")) {
-            const name = trimmed.split("(")[0];
-            const props = extractProps(trimmed);
-
-            if (components[name]) {
-                node = createComponent(name, props);
-            }
-        }
-
-        // -------------------------
-        // SIMPLE COMPONENT USAGE
-        // -------------------------
-        else if (components[trimmed]) {
-            node = createComponent(trimmed);
-        }
-
         if (!node) continue;
 
         const indent = getIndent(line);
 
         // -------------------------
-        // INSIDE COMPONENT
-        // -------------------------
-        if (currentComponent) {
-            if (!currentComponent.root) {
-                currentComponent.root = node;
-                currentComponent.stack.push({ node, indent });
-                continue;
-            }
-
-            while (
-                currentComponent.stack.length &&
-                indent <= currentComponent.stack[currentComponent.stack.length - 1].indent
-            ) {
-                currentComponent.stack.pop();
-            }
-
-            const parent = currentComponent.stack[currentComponent.stack.length - 1];
-
-            if (parent && parent.node.children) {
-                parent.node.children.push(node);
-            }
-
-            currentComponent.stack.push({ node, indent });
-
-            if (indent === 0) {
-                components[currentComponent.name] = currentComponent;
-                currentComponent = null;
-            }
-
-            continue;
-        }
-
-        // -------------------------
-        // MAIN TREE
+        // ROOT NODE
         // -------------------------
         if (!root) {
             root = node;
@@ -206,6 +128,9 @@ function parse(input) {
             continue;
         }
 
+        // -------------------------
+        // MOVE UP TREE
+        // -------------------------
         while (
             stack.length &&
             indent <= stack[stack.length - 1].indent
@@ -213,23 +138,27 @@ function parse(input) {
             stack.pop();
         }
 
+        // -------------------------
+        // ATTACH TO PARENT
+        // -------------------------
         const parent = stack[stack.length - 1];
 
         if (parent && parent.node.children) {
             parent.node.children.push(node);
         }
 
+        // -------------------------
+        // PUSH CURRENT NODE
+        // -------------------------
         stack.push({ node, indent });
     }
 
-    if (currentComponent) {
-        components[currentComponent.name] = currentComponent;
-    }
-
+    // -----------------------------
+    // FINAL OUTPUT
+    // -----------------------------
     return {
         tree: root,
-        theme,
-        components
+        theme
     };
 }
 
