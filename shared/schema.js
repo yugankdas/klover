@@ -14,9 +14,25 @@ function createRow(children = []) {
     return { type: "row", children };
 }
 
+function createImage(src, style = null) {
+    return {
+        type: "image",
+        src,
+        style
+    };
+}
+
+function createTheme(value) {
+    return {
+        type: "theme",
+        value
+    };
+}
 module.exports = {
     createText,
     createButton,
     createColumn,
-    createRow
+    createRow,
+    createImage,
+    createTheme
 };

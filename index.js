@@ -2,84 +2,90 @@ const fs = require("fs");
 const { parse } = require("./parser/parse");
 const { renderNode } = require("./renderer/render");
 
-// 📥 READ INPUT
+// 1. Read input
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 🧠 PARSE → TREE
-const tree = parse(input);
+// 2. Parse
+const result = parse(input);
 
-// 🎨 RENDER → HTML BODY
+const tree = result.tree;
+const theme = result.theme;
+
+// DEBUG (keep while developing)
+console.log(JSON.stringify(result, null, 2));
+
+// 3. Render UI
 const body = renderNode(tree);
 
-// 🎨 GLOBAL STYLES
-const styles = `
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f0f0f;
-    color: white;
-}
+// 4. Apply theme class
+const themeClass = theme ? `theme-${theme}` : "";
 
-/* CONTAINER */
-.column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 40px;
-}
-
-/* ROW */
-.row {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-}
-
-/* ALIGNMENT */
-.center {
-    align-items: center;
-}
-
-/* TEXT */
-.kv-text {
-    font-size: 18px;
-    line-height: 1.5;
-}
-
-/* BUTTON */
-.kv-button {
-    padding: 10px 16px;
-    border-radius: 6px;
-    border: none;
-    background: #4CAF50;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
-
-.kv-button:hover {
-    background: #45a049;
-}
-</style>
-`;
-
-// 📦 FINAL HTML
-const html = `
+// 5. Full HTML
+const fullHTML = `
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Klover Output</title>
-${styles}
+    <title>Klover Output</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+        }
+
+        .center {
+            align-items: center;
+        }
+
+        /* STYLE TOKENS */
+        .heading {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .primary {
+            background: #4f46e5;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+        }
+
+        .hero {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        /* THEMES */
+        .theme-dark {
+            background: #111;
+            color: white;
+        }
+
+        .theme-light {
+            background: white;
+            color: black;
+        }
+    </style>
 </head>
-<body>
+<body class="${themeClass}">
 ${body}
 </body>
 </html>
 `;
 
-// 💾 WRITE OUTPUT
-fs.writeFileSync("output.html", html);
+// 6. Write output
+fs.writeFileSync("output.html", fullHTML);
 
-console.log("✅ HTML generated successfully!");
+console.log("✅ output.html generated");
