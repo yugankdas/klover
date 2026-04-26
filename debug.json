@@ -5,43 +5,770 @@
     {
       "type": "state",
       "key": "count",
-      "value": 1
+      "value": 0
+    },
+    {
+      "type": "state",
+      "key": "score",
+      "value": 100
+    },
+    {
+      "type": "state",
+      "key": "player",
+      "value": "Hero"
+    },
+    {
+      "type": "state",
+      "key": "volume",
+      "value": 50
     },
     {
       "type": "column",
-      "align": "start",
+      "align": "gap=24",
       "children": [
         {
           "type": "text",
-          "value": "Hello",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
           "isVariable": false,
           "props": {
-            "size": "lg",
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "🎮 KLOVER V6 ULTIMATE TEST",
+          "isVariable": false,
+          "props": {
+            "size": "xl",
             "weight": "bold"
           }
         },
         {
-          "type": "button",
-          "label": "Click",
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
           "props": {
-            "primary": true,
-            "+": true,
-            "1)": true
-          },
-          "events": {
-            "click": {
-              "target": "count",
-              "expression": "count + 1"
-            }
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "🎬 VIDEO PLAYER",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
           }
         },
         {
           "type": "video",
-          "src": "video.mp4",
+          "src": "https://www.w3schools.com/html/mov_bbb.mp4",
           "props": {
             "controls": true,
-            "autoplay": true
+            "autoplay": true,
+            "muted": true
           }
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "👤 PLAYER STATS",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "column",
+              "align": "gap=8",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Name:",
+                  "isVariable": false,
+                  "props": {
+                    "size": "sm",
+                    "weight": "medium"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "player",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            },
+            {
+              "type": "column",
+              "align": "gap=8",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Score:",
+                  "isVariable": false,
+                  "props": {
+                    "size": "sm",
+                    "weight": "medium"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "score",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold",
+                    "primary": true
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            },
+            {
+              "type": "column",
+              "align": "gap=8",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Volume:",
+                  "isVariable": false,
+                  "props": {
+                    "size": "sm",
+                    "weight": "medium"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "volume",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "🎯 COUNTER DEMO",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "-10",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count - 10"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "-1",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count - 1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "text",
+              "value": "count",
+              "isVariable": true,
+              "props": {
+                "size": "2xl",
+                "weight": "bold",
+                "primary": true
+              }
+            },
+            {
+              "type": "button",
+              "label": "+1",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count + 1"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "+10",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count + 10"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "Reset",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, 0"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Set 100",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, 100"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Double",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count * 2"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Half",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, count / 2"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "⚡ LIVE CALCULATIONS",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "column",
+          "align": "gap=8",
+          "children": [
+            {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "count² =",
+                  "isVariable": false,
+                  "props": {
+                    "size": "md"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "count * count",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            },
+            {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "count × 3 =",
+                  "isVariable": false,
+                  "props": {
+                    "size": "md"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "count * 3",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            },
+            {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "count mod 5 =",
+                  "isVariable": false,
+                  "props": {
+                    "size": "md"
+                  }
+                },
+                {
+                  "type": "text",
+                  "value": "count % 5",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "🎮 SCORE CONTROLS",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "+10 Score",
+              "props": {
+                "primary": true
+              },
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "score",
+                      "expression": "score, score + 10"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "+50 Score",
+              "props": {
+                "primary": true
+              },
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "score",
+                      "expression": "score, score + 50"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Reset Score",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "score",
+                      "expression": "score, 100"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Double Score",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "score",
+                      "expression": "score, score * 2"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "text",
+              "value": "Total:",
+              "isVariable": false,
+              "props": {}
+            },
+            {
+              "type": "text",
+              "value": "count + score",
+              "isVariable": true,
+              "props": {
+                "size": "lg",
+                "weight": "bold",
+                "primary": true
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "🎨 STYLED BUTTON VARIANTS",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "Primary",
+              "props": {
+                "primary": true
+              },
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "player",
+                      "expression": "player, \"Primary\""
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Success",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "player",
+                      "expression": "player, \"Success\""
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Warning",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "player",
+                      "expression": "player, \"Warning\""
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Danger",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "player",
+                      "expression": "player, \"Danger\""
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "text",
+          "value": "📊 STATUS",
+          "isVariable": false,
+          "props": {
+            "size": "lg",
+            "weight": "semibold"
+          }
+        },
+        {
+          "type": "column",
+          "align": "gap=8",
+          "children": [
+            {
+              "type": "text",
+              "value": "count > 50 ? \"🔴 CRITICAL: Count exceeds 50!\" : count > 20 ? \"🟡 WARNING: Count above 20\" : count < 0 ? \"🔵 NEGATIVE: Count below zero\" : \"🟢 NORMAL: All good\"",
+              "isVariable": true,
+              "props": {}
+            },
+            {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Player:",
+                  "isVariable": false,
+                  "props": {}
+                },
+                {
+                  "type": "text",
+                  "value": "player",
+                  "isVariable": true,
+                  "props": {
+                    "size": "lg",
+                    "weight": "bold"
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            },
+            {
+              "type": "row",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Game Total:",
+                  "isVariable": false,
+                  "props": {}
+                },
+                {
+                  "type": "text",
+                  "value": "count + score",
+                  "isVariable": true,
+                  "props": {
+                    "size": "xl",
+                    "weight": "bold",
+                    "primary": true
+                  }
+                }
+              ],
+              "props": {},
+              "responsive": null
+            }
+          ],
+          "props": {},
+          "responsive": null
+        },
+        {
+          "type": "text",
+          "value": "━━━━━━━━━━━━━━━━━━━━━━",
+          "isVariable": false,
+          "props": {
+            "size": "md"
+          }
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "RESET ALL",
+              "props": {
+                "primary": true
+              },
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, 0"
+                    },
+                    {
+                      "target": "score",
+                      "expression": "score, 100"
+                    },
+                    {
+                      "target": "player",
+                      "expression": "player, \"Hero\""
+                    },
+                    {
+                      "target": "volume",
+                      "expression": "volume, 50"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "MAX OUT",
+              "props": {},
+              "events": {
+                "click": {
+                  "operations": [
+                    {
+                      "target": "count",
+                      "expression": "count, 999"
+                    },
+                    {
+                      "target": "score",
+                      "expression": "score, 999"
+                    },
+                    {
+                      "target": "player",
+                      "expression": "player, \"MAX\""
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "props": {},
+          "responsive": null
         }
       ],
       "props": {},
