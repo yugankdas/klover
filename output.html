@@ -306,11 +306,6 @@ if (typeof module !== "undefined") {
     {
       "type": "state",
       "key": "count",
-      "value": 0
-    },
-    {
-      "type": "state",
-      "key": "step",
       "value": 1
     },
     {
@@ -319,102 +314,43 @@ if (typeof module !== "undefined") {
       "children": [
         {
           "type": "text",
-          "value": "Klover V5 Counter",
+          "value": "Hello",
           "isVariable": false,
-          "style": null
+          "props": {
+            "size": "lg",
+            "weight": "bold"
+          }
         },
         {
-          "type": "row",
-          "children": [
-            {
-              "type": "text",
-              "value": "Count: ",
-              "isVariable": false,
-              "style": null
-            },
-            {
-              "type": "text",
-              "value": "count",
-              "isVariable": true,
-              "style": null
+          "type": "button",
+          "label": "Click",
+          "props": {
+            "primary": true,
+            "+": true,
+            "1)": true
+          },
+          "events": {
+            "click": {
+              "target": "count",
+              "expression": "count + 1"
             }
-          ]
+          }
         },
         {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "-",
-              "style": null,
-              "events": {
-                "click": {
-                  "target": "count",
-                  "expression": "count - step"
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "+",
-              "style": null,
-              "events": {
-                "click": {
-                  "target": "count",
-                  "expression": "count + step"
-                }
-              }
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "value": "Settings",
-          "isVariable": false,
-          "style": null
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "text",
-              "value": "Step: ",
-              "isVariable": false,
-              "style": null
-            },
-            {
-              "type": "text",
-              "value": "step",
-              "isVariable": true,
-              "style": null
-            },
-            {
-              "type": "button",
-              "label": "Double Step",
-              "style": null,
-              "events": {
-                "click": {
-                  "target": "step",
-                  "expression": "step * 2"
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Reset Step",
-              "style": null,
-              "events": {
-                "click": {
-                  "target": "step",
-                  "expression": "step = 1"
-                }
-              }
-            }
-          ]
+          "type": "video",
+          "src": "video.mp4",
+          "props": {
+            "controls": true,
+            "autoplay": true
+          }
         }
-      ]
+      ],
+      "props": {},
+      "responsive": null
     }
-  ]
+  ],
+  "props": {},
+  "responsive": null
 };
         
         console.log("Initializing Klover Runtime...");
