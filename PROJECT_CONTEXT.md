@@ -1,47 +1,72 @@
 # Klover Project Context
 
-Klover is a lightweight domain-specific language (DSL) and compiler designed to simplify the creation of structured web layouts. It transforms `.kv` files into styled HTML documents.
+Klover is a lightweight, state-aware domain-specific language (DSL) and compiler for building structured UI layouts.
 
 ## Core Objective
-To provide a human-readable, declarative syntax for building UI components that abstracts away the complexities of HTML/CSS for simple layouts.
+To provide a declarative syntax for building interactive UI components that cleanly separates structure (AST), logic (Runtime), and presentation (Renderer).
 
-## Current Architecture
+## V4 Clean Architecture
 
 ### 1. Source Input (`input.kv`)
-Uses a simple line-based syntax:
-- `text "Content"`: Renders a paragraph.
-- `button "Label"`: Renders a styled button.
+Uses an indentation-based syntax with first-class state and event support:
+- `state [key] = [value]`: Defines a reactive state variable.
+- `text [key]`: References a state variable (becomes a variable node in AST).
+- `button "[label]" onClick=set([expr])`: Defines an interactive button with a structured event.
+- `column [align]` / `row`: Standard layout containers.
+- `component [Name]:`: Reusable UI component definitions.
 
 ### 2. Parser (`/parser/parse.js`)
-- Cleans input lines and filters empty ones.
-- Uses regex to extract values from `text` and `button` declarations.
-- Converts raw strings into structured JSON objects using shared schemas.
+- **Pure Extraction**: Transforms KV text into a semantic AST.
+- **Event System**: Parses `onClick` into a structured object:
+  ```js
+  events: { click: { target: "count", expression: "count + 1" } }
+  ```
+- **Variable Flagging**: Automatically identifies state references in text nodes via `isVariable: true`.
 
-### 3. Shared Layer (`/shared/schema.js`)
-- Defines the data structures (schemas) for all Klover elements.
-- Ensures consistency between the parser and the renderer.
+### 3. Runtime (`/runtime/runtime.js`)
+- **Logic Engine**: Manages the application's logic state and expression evaluation.
+- **State Inventory**: Traverses the AST to extract initial `state` values.
+- **Methods**:
+  - `evaluate(expr)`: Evaluates expressions in the context of the current state.
+  - `setState(key, expr)`: Updates state values dynamically.
 
-### 4. Renderer (`/renderer/render.js`)
-- Iterates through the structured elements.
-- Maps each element type to its corresponding HTML representation.
-- Wraps elements in a `.column` container for layout.
+### 4. Shared Layer (`/shared/schema.js`)
+- Contains consistent factory functions (`createState`, `createButton`, etc.) for AST nodes.
 
 ### 5. Entry Point (`index.js`)
-- Orchestrates the full lifecycle: Read -> Parse -> Render -> Wrap -> Write.
-- Injects a standard CSS theme into the final HTML output.
+- Orchestrates the pipeline: Read → Parse → Runtime Init → Render → Write.
+- **Handover**: Passes the `tree`, `components`, and `runtime` object to the renderer.
+
+## File Hierarchy & Descriptions
+
+```text
+klover/
+├── parser/
+│   └── parse.js          # Semantic DSL parser (Produces Clean AST)
+├── runtime/
+│   └── runtime.js        # Logic engine and state manager
+├── renderer/
+│   └── render.js         # (Teammate Managed) Transforms AST to HTML
+├── shared/
+│   └── schema.js         # AST node factory functions
+├── input.kv              # Primary DSL source file
+├── index.js              # Compiler entry point
+├── package.json          # Project configuration
+└── PROJECT_CONTEXT.md    # Technical documentation (this file)
+```
 
 ## Technical Stack
-- **Language**: Node.js (JavaScript)
-- **Output**: HTML5 / CSS3
-- **Dependencies**: Native `fs` module.
+- **Runtime**: Node.js
+- **Logic**: Clean, decoupled JavaScript AST processing.
+- **Dependencies**: Native `fs` only.
 
-## Future Roadmap (Planned)
-- [ ] Add support for `image "url"` element.
-- [ ] Implement nested containers (e.g., `row { ... }`).
-- [ ] Allow inline styling or classes via KV syntax.
-- [ ] Add a development server with hot-reloading for `.kv` files.
+## Current Status
+- [x] **V4 Architecture**: Full separation of concerns achieved.
+- [x] **Stateful AST**: Parser correctly identifies states and variable references.
+- [x] **Structured Events**: Events are parsed into data objects, not strings.
+- [ ] **Renderer Integration**: The renderer is currently being updated by a teammate to support the new `runtime` and `events` data.
 
 ## Design Philosophy
-- **Simplicity**: No complex nesting or logic in the DSL.
-- **Visual Excellence**: Default output should look modern and professional (Glassmorphism, clean typography).
-- **Extensibility**: Easy to add new element types by updating schema, parser, and renderer.
+- **Clean Separation**: No rendering hacks in the parser; no logic in the renderer.
+- **Machine Readable**: The AST is a pure data structure that can be rendered to any target (HTML, Mobile, TUI).
+- **Declarative Logic**: Interactivity is defined via simple expressions, not inline JavaScript.
