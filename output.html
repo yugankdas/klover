@@ -1,110 +1,437 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App</title>
+    <title>Klover V5 — Live App</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 40px; 
+            background: #f8f9fa; 
+            color: #333;
+            line-height: 1.6;
+        }
+        #app { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1, h2 { color: #2c3e50; }
+        p { margin: 8px 0; }
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
     <div id="app"></div>
 
     <script>
-        const tree = {"type":"column","align":"start","children":[{"type":"state","key":"items","value":[1,2,3]},{"type":"state","key":"count","value":1},{"type":"column","align":"start","children":[]}]};
-        const state = {"items":[1,2,3],"count":1};
-    </script>
-
-    <script>
+        // --- EMBEDDED RUNTIME ---
         class Runtime {
-            constructor(tree, state) {
-                this.tree = tree;
-                this.state = state;
-            }
+    constructor(ast) {
+        this.ast = ast;
+        this.state = {};
+        this.onRender = null;
+    }
 
-            evaluate(expr) {
-                const keys = Object.keys(this.state);
-                const values = Object.values(this.state);
-                return new Function(...keys, "return " + expr)(...values);
-            }
+    // -------------------------
+    // INIT STATE
+    // -------------------------
+    init() {
+        this.extractState(this.ast);
+    }
 
-            setState(key, expr) {
-                this.state[key] = this.evaluate(expr);
-                renderApp(this.tree, this);
-            }
+    extractState(node) {
+        if (!node) return;
+
+        if (node.type === "state") {
+            this.state[node.key] = node.value;
         }
 
-        const runtime = new Runtime(tree, state);
+        if (node.children) {
+            node.children.forEach(child => this.extractState(child));
+        }
+    }
 
-        function renderNode(node, runtime) {
-            if (!node) return document.createTextNode("");
+    // -------------------------
+    // EVALUATE EXPRESSIONS
+    // -------------------------
+    evaluate(expr, scope = {}) {
+        const context = { ...this.state, ...scope };
 
-            // TEXT
-            if (node.type === "text") {
-                const el = document.createElement("p");
+        const keys = Object.keys(context);
+        const values = Object.values(context);
 
-                if (node.isVariable && runtime.state[node.value] !== undefined) {
-                    el.innerText = runtime.state[node.value];
-                } else {
-                    el.innerText = node.value;
-                }
+        try {
+            return new Function(...keys, "return " + expr)(...values);
+        } catch (e) {
+            console.error("Evaluation Error:", e, "Expression:", expr);
+            return null;
+        }
+    }
 
-                return el;
-            }
+    // -------------------------
+    // STATE MANAGEMENT
+    // -------------------------
+    setState(target, expression) {
+        // Simple assignment handling: if expression is "count + 1", we eval it.
+        // If it's "step = 1", we want to set step to 1.
+        
+        let finalExpr = expression;
+        let actualTarget = target;
 
-            // BUTTON
-            if (node.type === "button") {
-                const el = document.createElement("button");
-                el.innerText = node.label;
+        // Support both "set(count + 1)" and "set(step = 1)"
+        if (expression.includes("=")) {
+            const parts = expression.split("=");
+            actualTarget = parts[0].trim();
+            finalExpr = parts[1].trim();
+        }
 
-                if (node.events?.click) {
-                    el.addEventListener("click", () => {
-                        runtime.setState(
-                            node.events.click.target,
-                            node.events.click.expression
-                        );
-                    });
-                }
+        const newValue = this.evaluate(finalExpr);
+        this.state[actualTarget] = newValue;
+        
+        console.log(`State Update: ${actualTarget} =`, newValue);
 
-                return el;
-            }
+        if (this.onRender) {
+            const resolvedTree = this.resolveTree();
+            this.onRender(resolvedTree);
+        }
+    }
 
-            // COLUMN
-            if (node.type === "column") {
-                const el = document.createElement("div");
-                el.style.display = "flex";
-                el.style.flexDirection = "column";
-                el.style.alignItems = "center";
-                el.style.gap = "12px";
-                el.style.marginTop = "100px";
+    // -------------------------
+    // CORE: RESOLVE NODE
+    // -------------------------
+    resolveNode(node, scope = {}) {
+        if (!node) return null;
 
-                node.children?.forEach(child => {
-                    el.appendChild(renderNode(child, runtime));
+        // -------------------------
+        // TEXT (VARIABLE)
+        // -------------------------
+        if (node.type === "text" && node.isVariable) {
+            const value =
+                scope[node.value] !== undefined
+                    ? scope[node.value]
+                    : this.state[node.value];
+
+            return {
+                ...node,
+                value,
+                isVariable: false
+            };
+        }
+
+        // -------------------------
+        // IF
+        // -------------------------
+        if (node.type === "if") {
+            const result = this.evaluate(node.condition, scope);
+
+            if (!result) return null;
+
+            return {
+                ...node,
+                children: node.children
+                    .map(child => this.resolveNode(child, scope))
+                    .filter(Boolean)
+            };
+        }
+
+        // -------------------------
+        // REPEAT
+        // -------------------------
+        if (node.type === "repeat") {
+            const list = this.state[node.source] || [];
+
+            const expanded = [];
+
+            list.forEach(item => {
+                const newScope = {
+                    ...scope,
+                    [node.itemName]: item
+                };
+
+                node.children.forEach(child => {
+                    const resolved = this.resolveNode(child, newScope);
+                    if (resolved) expanded.push(resolved);
                 });
+            });
 
-                return el;
-            }
-
-            // ROW
-            if (node.type === "row") {
-                const el = document.createElement("div");
-                el.style.display = "flex";
-                el.style.gap = "10px";
-
-                node.children?.forEach(child => {
-                    el.appendChild(renderNode(child, runtime));
-                });
-
-                return el;
-            }
-
-            return document.createTextNode("");
+            return {
+                type: "fragment",
+                children: expanded
+            };
         }
 
-        function renderApp(tree, runtime) {
-            const root = document.getElementById("app");
-            root.innerHTML = "";
-            root.appendChild(renderNode(tree, runtime));
+        // -------------------------
+        // GENERIC NODE
+        // -------------------------
+        if (node.children) {
+            return {
+                ...node,
+                children: node.children
+                    .map(child => this.resolveNode(child, scope))
+                    .filter(Boolean)
+            };
         }
 
-        renderApp(tree, runtime);
+        return { ...node };
+    }
+
+    // -------------------------
+    // ENTRY POINT
+    // -------------------------
+    resolveTree() {
+        return this.resolveNode(this.ast);
+    }
+}
+
+if (typeof module !== "undefined") {
+    module.exports = Runtime;
+}
+
+        // --- EMBEDDED RENDERER ---
+        // renderer/render.js
+// V5: PURE RENDERER - NO LOGIC, NO VARIABLE RESOLUTION
+
+function renderNode(node, runtime) {
+    if (!node) return document.createTextNode("");
+
+    // TEXT
+    if (node.type === "text") {
+        const el = document.createElement("p");
+        el.innerText = node.value;
+        return el;
+    }
+
+    // BUTTON
+    if (node.type === "button") {
+        const el = document.createElement("button");
+        el.innerText = node.label;
+
+        if (node.events?.click) {
+            el.addEventListener("click", () => {
+                runtime.setState(
+                    node.events.click.target,
+                    node.events.click.expression
+                );
+            });
+        }
+
+        return el;
+    }
+
+    // IMAGE
+    if (node.type === "image") {
+        const el = document.createElement("img");
+        el.src = node.src;
+        return el;
+    }
+
+    // COLUMN
+    if (node.type === "column") {
+        const el = document.createElement("div");
+        el.style.display = "flex";
+        el.style.flexDirection = "column";
+        el.style.alignItems = "center";
+        el.style.gap = "12px";
+        el.style.marginTop = "50px";
+
+        node.children?.forEach(child => {
+            el.appendChild(renderNode(child, runtime));
+        });
+
+        return el;
+    }
+
+    // ROW
+    if (node.type === "row") {
+        const el = document.createElement("div");
+        el.style.display = "flex";
+        el.style.gap = "10px";
+
+        node.children?.forEach(child => {
+            el.appendChild(renderNode(child, runtime));
+        });
+
+        return el;
+    }
+
+    // FRAGMENT (for repeat/if expansion)
+    if (node.type === "fragment") {
+        const fragment = document.createDocumentFragment();
+        node.children?.forEach(child => {
+            fragment.appendChild(renderNode(child, runtime));
+        });
+        return fragment;
+    }
+
+    return document.createTextNode("");
+}
+
+function renderApp(tree, runtime) {
+    const root = document.getElementById("app");
+    if (!root) return;
+
+    root.innerHTML = "";
+    root.appendChild(renderNode(tree, runtime));
+}
+
+if (typeof module !== "undefined") {
+    module.exports = { renderApp };
+}
+
+        // --- BOOTSTRAP ---
+        const ast = {
+  "type": "column",
+  "align": "start",
+  "children": [
+    {
+      "type": "state",
+      "key": "count",
+      "value": 0
+    },
+    {
+      "type": "state",
+      "key": "step",
+      "value": 1
+    },
+    {
+      "type": "column",
+      "align": "start",
+      "children": [
+        {
+          "type": "text",
+          "value": "Klover V5 Counter",
+          "isVariable": false,
+          "style": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "text",
+              "value": "Count: ",
+              "isVariable": false,
+              "style": null
+            },
+            {
+              "type": "text",
+              "value": "count",
+              "isVariable": true,
+              "style": null
+            }
+          ]
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "-",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "count",
+                  "expression": "count - step"
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "+",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "count",
+                  "expression": "count + step"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Settings",
+          "isVariable": false,
+          "style": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "text",
+              "value": "Step: ",
+              "isVariable": false,
+              "style": null
+            },
+            {
+              "type": "text",
+              "value": "step",
+              "isVariable": true,
+              "style": null
+            },
+            {
+              "type": "button",
+              "label": "Double Step",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "step",
+                  "expression": "step * 2"
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Reset Step",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "step",
+                  "expression": "step = 1"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+        
+        console.log("Initializing Klover Runtime...");
+        const runtime = new Runtime(ast);
+        runtime.init();
+
+        // Connect Runtime to Renderer
+        runtime.onRender = (resolvedTree) => {
+            console.log("Re-rendering...");
+            renderApp(resolvedTree, runtime);
+        };
+
+        // Initial Render
+        const initialResolvedTree = runtime.resolveTree();
+        renderApp(initialResolvedTree, runtime);
+        
+        console.log("✅ Klover App Ready!");
     </script>
 </body>
 </html>

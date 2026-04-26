@@ -22,8 +22,13 @@ function getIndent(line) {
     return line.match(/^ */)[0].length;
 }
 
-function extractStyle(parts) {
-    return parts.length > 2 && !parts[2].includes("onClick=") ? parts[2] : null;
+function extractStyle(trimmed, parts, matchEndIndex) {
+    const afterMatch = trimmed.substring(matchEndIndex).trim();
+    const afterParts = afterMatch.split(" ").filter(p => p.length > 0);
+    if (afterParts.length > 0 && !afterParts[0].startsWith("onClick=")) {
+        return afterParts[0];
+    }
+    return null;
 }
 
 function parse(input) {
@@ -46,18 +51,16 @@ function parse(input) {
             continue;
         }
 
-        // 🔥 STATE (V5 READY)
+        // STATE
         if (trimmed.startsWith("state")) {
             const key = parts[1];
             let rawValue = parts.slice(3).join(" ");
-
             let value;
             try {
                 value = JSON.parse(rawValue);
             } catch {
                 value = isNaN(rawValue) ? rawValue : Number(rawValue);
             }
-
             node = createState(key, value);
         }
 
@@ -75,13 +78,13 @@ function parse(input) {
             stack.length = 0;
         }
 
-        // 🔁 REPEAT (V5)
-        if (trimmed.startsWith("repeat")) {
+        // REPEAT
+        else if (trimmed.startsWith("repeat")) {
             const source = parts[1].replace(":", "");
             node = createRepeat(source, "item", []);
         }
 
-        // 🔀 IF (V5)
+        // IF
         else if (trimmed.startsWith("if")) {
             const condition = trimmed.replace("if", "").replace(":", "").trim();
             node = createIf(condition, []);
@@ -90,9 +93,9 @@ function parse(input) {
         // TEXT
         else if (trimmed.startsWith("text")) {
             const match = trimmed.match(/"(.*?)"/);
-
             if (match) {
-                node = createText(match[1], false, extractStyle(parts));
+                const matchEndIndex = trimmed.indexOf(match[0]) + match[0].length;
+                node = createText(match[1], false, extractStyle(trimmed, parts, matchEndIndex));
             } else {
                 node = createText(parts[1], true, null);
             }
@@ -101,27 +104,28 @@ function parse(input) {
         // BUTTON
         else if (trimmed.startsWith("button")) {
             const match = trimmed.match(/"(.*?)"/);
-
             if (match) {
+                const matchEndIndex = trimmed.indexOf(match[0]) + match[0].length;
                 let events = null;
-
                 if (trimmed.includes("onClick=set(")) {
                     const exprMatch = trimmed.match(/onClick=set\((.*?)\)/);
-
                     if (exprMatch) {
-                        const expr = exprMatch[1];
-                        const target = expr.split(/[\s+\-*/]/)[0].trim();
-
+                        let expr = exprMatch[1];
+                        let target = expr.split(/[\s+\-*/=]/)[0].trim();
+                        // 🔥 FIX: Remove commas from expression
+                        if (expr.includes(",")) {
+                            const parts = expr.split(",");
+                            expr = parts[parts.length - 1].trim();
+                        }
                         events = {
                             click: {
-                                target,
+                                target: target,
                                 expression: expr
                             }
                         };
                     }
                 }
-
-                node = createButton(match[1], extractStyle(parts), events);
+                node = createButton(match[1], extractStyle(trimmed, parts, matchEndIndex), events);
             }
         }
 
@@ -145,13 +149,13 @@ function parse(input) {
         }
 
         // COMPONENT USAGE
-        else if (components[parts[0]]) {
+        else if (components[parts[0]] && !trimmed.startsWith("component")) {
             node = createComponentNode(parts[0]);
         }
 
         if (!node) continue;
 
-        // HIERARCHY
+        // 🔥 FIXED HIERARCHY
         while (stack.length && indent <= stack[stack.length - 1].indent) {
             stack.pop();
         }
@@ -165,14 +169,13 @@ function parse(input) {
                 roots.push(node);
             }
         } else {
-            const parent = stack[stack.length - 1].node;
-            if (parent.children) {
-                parent.node?.children?.push?.(node);
-
+            const parent = stack[stack.length - 1];
+            if (parent.node.children) {
+                parent.node.children.push(node);
             }
         }
 
-        stack.push({ node, indent });
+        stack.push({ node: node, indent: indent });
     }
 
     const tree = roots.length > 1 ? createColumn(roots) : roots[0];

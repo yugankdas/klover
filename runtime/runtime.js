@@ -2,6 +2,7 @@ class Runtime {
     constructor(ast) {
         this.ast = ast;
         this.state = {};
+        this.onRender = null;
     }
 
     // -------------------------
@@ -32,7 +33,40 @@ class Runtime {
         const keys = Object.keys(context);
         const values = Object.values(context);
 
-        return new Function(...keys, "return " + expr)(...values);
+        try {
+            return new Function(...keys, "return " + expr)(...values);
+        } catch (e) {
+            console.error("Evaluation Error:", e, "Expression:", expr);
+            return null;
+        }
+    }
+
+    // -------------------------
+    // STATE MANAGEMENT
+    // -------------------------
+    setState(target, expression) {
+        // Simple assignment handling: if expression is "count + 1", we eval it.
+        // If it's "step = 1", we want to set step to 1.
+        
+        let finalExpr = expression;
+        let actualTarget = target;
+
+        // Support both "set(count + 1)" and "set(step = 1)"
+        if (expression.includes("=")) {
+            const parts = expression.split("=");
+            actualTarget = parts[0].trim();
+            finalExpr = parts[1].trim();
+        }
+
+        const newValue = this.evaluate(finalExpr);
+        this.state[actualTarget] = newValue;
+        
+        console.log(`State Update: ${actualTarget} =`, newValue);
+
+        if (this.onRender) {
+            const resolvedTree = this.resolveTree();
+            this.onRender(resolvedTree);
+        }
     }
 
     // -------------------------
@@ -122,4 +156,6 @@ class Runtime {
     }
 }
 
-module.exports = Runtime;
+if (typeof module !== "undefined") {
+    module.exports = Runtime;
+}
