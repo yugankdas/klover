@@ -1,0 +1,117 @@
+{
+  "type": "column",
+  "align": "start",
+  "children": [
+    {
+      "type": "state",
+      "key": "count",
+      "value": 0
+    },
+    {
+      "type": "state",
+      "key": "step",
+      "value": 1
+    },
+    {
+      "type": "column",
+      "align": "start",
+      "children": [
+        {
+          "type": "text",
+          "value": "Klover V5 Counter",
+          "isVariable": false,
+          "style": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "text",
+              "value": "Count: ",
+              "isVariable": false,
+              "style": null
+            },
+            {
+              "type": "text",
+              "value": "count",
+              "isVariable": true,
+              "style": null
+            }
+          ]
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "-",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "count",
+                  "expression": "count - step"
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "+",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "count",
+                  "expression": "count + step"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "value": "Settings",
+          "isVariable": false,
+          "style": null
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "text",
+              "value": "Step: ",
+              "isVariable": false,
+              "style": null
+            },
+            {
+              "type": "text",
+              "value": "step",
+              "isVariable": true,
+              "style": null
+            },
+            {
+              "type": "button",
+              "label": "Double Step",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "step",
+                  "expression": "step * 2"
+                }
+              }
+            },
+            {
+              "type": "button",
+              "label": "Reset Step",
+              "style": null,
+              "events": {
+                "click": {
+                  "target": "step",
+                  "expression": "step = 1"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

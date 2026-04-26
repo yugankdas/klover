@@ -1,126 +1,98 @@
 const fs = require("fs");
+const path = require("path");
 const { parse } = require("./parser/parse");
-const Runtime = require("./runtime/runtime");
 
-const input = fs.readFileSync("input.kv", "utf-8");
+// 1. READ INPUT
+console.log("Reading input.kv...");
+const input = fs.readFileSync("input.kv", "utf8");
 
-// 🔥 PARSE
-const parsed = parse(input);
+// 2. PARSE
+console.log("Parsing DSL...");
+const result = parse(input);
+const ast = result.tree;
 
-// 🔥 INIT RUNTIME
-const runtime = new Runtime(parsed.tree);
-runtime.init();
+// 3. READ CLIENT SCRIPTS
+console.log("Bundling scripts...");
+const runtimeCode = fs.readFileSync(path.join(__dirname, "runtime/runtime.js"), "utf8");
+const rendererCode = fs.readFileSync(path.join(__dirname, "renderer/render.js"), "utf8");
 
-// ---------------------------
-// SERIALIZE DATA INTO HTML
-// ---------------------------
-const html = `
-<!DOCTYPE html>
+// 4. GENERATE HTML
+const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App</title>
+    <title>Klover V5 — Live App</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 40px; 
+            background: #f8f9fa; 
+            color: #333;
+            line-height: 1.6;
+        }
+        #app { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1, h2 { color: #2c3e50; }
+        p { margin: 8px 0; }
+        button {
+            padding: 10px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body>
     <div id="app"></div>
 
     <script>
-        const tree = ${JSON.stringify(parsed.tree)};
-        const state = ${JSON.stringify(runtime.state)};
-    </script>
+        // --- EMBEDDED RUNTIME ---
+        ${runtimeCode}
 
-    <script>
-        class Runtime {
-            constructor(tree, state) {
-                this.tree = tree;
-                this.state = state;
-            }
+        // --- EMBEDDED RENDERER ---
+        ${rendererCode}
 
-            evaluate(expr) {
-                const keys = Object.keys(this.state);
-                const values = Object.values(this.state);
-                return new Function(...keys, "return " + expr)(...values);
-            }
+        // --- BOOTSTRAP ---
+        const ast = ${JSON.stringify(ast, null, 2)};
+        
+        console.log("Initializing Klover Runtime...");
+        const runtime = new Runtime(ast);
+        runtime.init();
 
-            setState(key, expr) {
-                this.state[key] = this.evaluate(expr);
-                renderApp(this.tree, this);
-            }
-        }
+        // Connect Runtime to Renderer
+        runtime.onRender = (resolvedTree) => {
+            console.log("Re-rendering...");
+            renderApp(resolvedTree, runtime);
+        };
 
-        const runtime = new Runtime(tree, state);
-
-        function renderNode(node, runtime) {
-            if (!node) return document.createTextNode("");
-
-            if (node.type === "text") {
-                const el = document.createElement("p");
-
-                if (node.isVariable && runtime.state[node.value] !== undefined) {
-                    el.innerText = runtime.state[node.value];
-                } else {
-                    el.innerText = node.value;
-                }
-
-                return el;
-            }
-
-            if (node.type === "button") {
-                const el = document.createElement("button");
-                el.innerText = node.label;
-
-                if (node.events?.click) {
-                    el.addEventListener("click", () => {
-                        runtime.setState(
-                            node.events.click.target,
-                            node.events.click.expression
-                        );
-                    });
-                }
-
-                return el;
-            }
-
-            if (node.type === "column") {
-                const el = document.createElement("div");
-                el.style.display = "flex";
-                el.style.flexDirection = "column";
-                el.style.alignItems = "center";
-                el.style.gap = "12px";
-                el.style.marginTop = "100px";
-
-                node.children?.forEach(child => {
-                    el.appendChild(renderNode(child, runtime));
-                });
-
-                return el;
-            }
-
-            if (node.type === "row") {
-                const el = document.createElement("div");
-                el.style.display = "flex";
-                el.style.gap = "10px";
-
-                node.children?.forEach(child => {
-                    el.appendChild(renderNode(child, runtime));
-                });
-
-                return el;
-            }
-
-            return document.createTextNode("");
-        }
-
-        function renderApp(tree, runtime) {
-            const root = document.getElementById("app");
-            root.innerHTML = "";
-            root.appendChild(renderNode(tree, runtime));
-        }
-
-        renderApp(tree, runtime);
+        // Initial Render
+        const initialResolvedTree = runtime.resolveTree();
+        renderApp(initialResolvedTree, runtime);
+        
+        console.log("✅ Klover App Ready!");
     </script>
 </body>
-</html>
-`;
+</html>`;
 
-// 🔥 WRITE OUTPUT
 fs.writeFileSync("output.html", html);
+fs.writeFileSync("debug.json", JSON.stringify(ast, null, 2));
+
+console.log("✅ output.html generated");
+console.log("✅ debug.json updated");
