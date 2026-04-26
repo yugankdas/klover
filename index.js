@@ -1,49 +1,126 @@
 const fs = require("fs");
 const { parse } = require("./parser/parse");
-const { render } = require("./renderer/render");
 const Runtime = require("./runtime/runtime");
 
 const input = fs.readFileSync("input.kv", "utf-8");
 
-// 1. Parse
-const result = parse(input);
-const tree = result.tree;
-const theme = result.theme;
-const components = result.components;
+// 🔥 PARSE
+const parsed = parse(input);
 
-// 2. Runtime
-const runtime = new Runtime(tree);
+// 🔥 INIT RUNTIME
+const runtime = new Runtime(parsed.tree);
 runtime.init();
 
-// 3. Render (Pass runtime to teammate's renderer)
-const body = render(tree, {
-    theme,
-    components,
-    runtime
-});
-
-// 4. Styles
-const styles = `
-<style>
-body { margin: 0; font-family: sans-serif; }
-.app { padding: 40px; }
-.dark { background: #111; color: white; }
-.column { display: flex; flex-direction: column; gap: 20px; }
-.row { display: flex; gap: 10px; }
-.center { align-items: center; }
-.heading { font-size: 28px; font-weight: bold; }
-.kv-button { padding: 10px; border-radius: 8px; background: green; color: white; }
-.kv-image { max-width: 100%; border-radius: 10px; }
-</style>
-`;
-
-// 5. Output
+// ---------------------------
+// SERIALIZE DATA INTO HTML
+// ---------------------------
 const html = `
+<!DOCTYPE html>
 <html>
-<head>${styles}</head>
-<body>${body}</body>
+<head>
+    <title>Klover App</title>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        const tree = ${JSON.stringify(parsed.tree)};
+        const state = ${JSON.stringify(runtime.state)};
+    </script>
+
+    <script>
+        class Runtime {
+            constructor(tree, state) {
+                this.tree = tree;
+                this.state = state;
+            }
+
+            evaluate(expr) {
+                const keys = Object.keys(this.state);
+                const values = Object.values(this.state);
+                return new Function(...keys, "return " + expr)(...values);
+            }
+
+            setState(key, expr) {
+                this.state[key] = this.evaluate(expr);
+                renderApp(this.tree, this);
+            }
+        }
+
+        const runtime = new Runtime(tree, state);
+
+        function renderNode(node, runtime) {
+            if (!node) return document.createTextNode("");
+
+            if (node.type === "text") {
+                const el = document.createElement("p");
+
+                if (node.isVariable && runtime.state[node.value] !== undefined) {
+                    el.innerText = runtime.state[node.value];
+                } else {
+                    el.innerText = node.value;
+                }
+
+                return el;
+            }
+
+            if (node.type === "button") {
+                const el = document.createElement("button");
+                el.innerText = node.label;
+
+                if (node.events?.click) {
+                    el.addEventListener("click", () => {
+                        runtime.setState(
+                            node.events.click.target,
+                            node.events.click.expression
+                        );
+                    });
+                }
+
+                return el;
+            }
+
+            if (node.type === "column") {
+                const el = document.createElement("div");
+                el.style.display = "flex";
+                el.style.flexDirection = "column";
+                el.style.alignItems = "center";
+                el.style.gap = "12px";
+                el.style.marginTop = "100px";
+
+                node.children?.forEach(child => {
+                    el.appendChild(renderNode(child, runtime));
+                });
+
+                return el;
+            }
+
+            if (node.type === "row") {
+                const el = document.createElement("div");
+                el.style.display = "flex";
+                el.style.gap = "10px";
+
+                node.children?.forEach(child => {
+                    el.appendChild(renderNode(child, runtime));
+                });
+
+                return el;
+            }
+
+            return document.createTextNode("");
+        }
+
+        function renderApp(tree, runtime) {
+            const root = document.getElementById("app");
+            root.innerHTML = "";
+            root.appendChild(renderNode(tree, runtime));
+        }
+
+        renderApp(tree, runtime);
+    </script>
+</body>
 </html>
 `;
 
+// 🔥 WRITE OUTPUT
 fs.writeFileSync("output.html", html);
-console.log("✅ Build complete");
