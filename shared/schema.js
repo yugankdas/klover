@@ -28,11 +28,29 @@ function createTheme(value) {
         value
     };
 }
+
+function createComponentNode(name) {
+    return {
+        type: "component",
+        name
+    };
+}
+
+function createState(key, value) {
+    return {
+        type: "state",
+        key,
+        value
+    };
+}
+
 module.exports = {
     createText,
     createButton,
     createColumn,
     createRow,
     createImage,
-    createTheme
+    createTheme,
+    createComponentNode,
+    createState
 };
