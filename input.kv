@@ -1,0 +1,18 @@
+state count = 0
+state step = 1
+
+column
+    text "Klover V5 Counter"
+    row
+        text "Count: "
+        text count
+    row
+        button "-" onClick=set(count - step)
+        button "+" onClick=set(count + step)
+    
+    text "Settings"
+    row
+        text "Step: "
+        text step
+        button "Double Step" onClick=set(step * 2)
+        button "Reset Step" onClick=set(step = 1)
