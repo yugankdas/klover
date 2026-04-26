@@ -34,7 +34,15 @@ class Runtime {
         const values = Object.values(context);
 
         try {
-            return new Function(...keys, "return " + expr)(...values);
+            // Clean up common DSL artifacts like trailing commas or multiple set calls 
+            // though the parser should have handled most.
+            let cleanExpr = expr.trim();
+            
+            // If it's a comma-separated operation list (e.g., "count, count + 1"), 
+            // Javascript's comma operator will work, but we should make sure it doesn't 
+            // break if we expect a single value.
+            
+            return new Function(...keys, "return " + cleanExpr)(...values);
         } catch (e) {
             console.error("Evaluation Error:", e, "Expression:", expr);
             return null;
@@ -45,13 +53,9 @@ class Runtime {
     // STATE MANAGEMENT
     // -------------------------
     setState(target, expression) {
-        // Simple assignment handling: if expression is "count + 1", we eval it.
-        // If it's "step = 1", we want to set step to 1.
-        
         let finalExpr = expression;
         let actualTarget = target;
 
-        // Support both "set(count + 1)" and "set(step = 1)"
         if (expression.includes("=")) {
             const parts = expression.split("=");
             actualTarget = parts[0].trim();
@@ -63,9 +67,33 @@ class Runtime {
         
         console.log(`State Update: ${actualTarget} =`, newValue);
 
+        // Notify render
         if (this.onRender) {
-            const resolvedTree = this.resolveTree();
-            this.onRender(resolvedTree);
+            this.onRender(this.resolveTree());
+        }
+    }
+
+    executeOperations(operations) {
+        if (!Array.isArray(operations)) return;
+
+        operations.forEach(op => {
+            const { target, expression } = op;
+            let finalExpr = expression;
+            let actualTarget = target;
+
+            if (expression.includes("=")) {
+                const parts = expression.split("=");
+                actualTarget = parts[0].trim();
+                finalExpr = parts[1].trim();
+            }
+
+            const newValue = this.evaluate(finalExpr);
+            this.state[actualTarget] = newValue;
+            console.log(`Op Update: ${actualTarget} =`, newValue);
+        });
+
+        if (this.onRender) {
+            this.onRender(this.resolveTree());
         }
     }
 
