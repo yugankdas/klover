@@ -1,5 +1,11 @@
-state count = 0
+state items = [1,2,3]
+state count = 1
 
 column:
-    text count
-    button "Add" onClick=set(count + 1)
+    text "Header"
+
+    if count > 0:
+        text "Active"
+
+    repeat items:
+        text item

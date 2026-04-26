@@ -8,8 +8,8 @@
     <div id="app"></div>
 
     <script>
-        const tree = {"type":"column","align":"start","children":[{"type":"state","key":"count","value":0},{"type":"column","align":"start","children":[{"type":"text","value":"count","isVariable":true},{"type":"button","label":"Add","style":null,"events":{"click":{"target":"count","expression":"count + 1"}}}]}]};
-        const state = {"count":0};
+        const tree = {"type":"column","align":"start","children":[{"type":"state","key":"items","value":[1,2,3]},{"type":"state","key":"count","value":1},{"type":"column","align":"start","children":[]}]};
+        const state = {"items":[1,2,3],"count":1};
     </script>
 
     <script>
@@ -36,6 +36,7 @@
         function renderNode(node, runtime) {
             if (!node) return document.createTextNode("");
 
+            // TEXT
             if (node.type === "text") {
                 const el = document.createElement("p");
 
@@ -48,6 +49,7 @@
                 return el;
             }
 
+            // BUTTON
             if (node.type === "button") {
                 const el = document.createElement("button");
                 el.innerText = node.label;
@@ -64,6 +66,7 @@
                 return el;
             }
 
+            // COLUMN
             if (node.type === "column") {
                 const el = document.createElement("div");
                 el.style.display = "flex";
@@ -79,6 +82,7 @@
                 return el;
             }
 
+            // ROW
             if (node.type === "row") {
                 const el = document.createElement("div");
                 el.style.display = "flex";
