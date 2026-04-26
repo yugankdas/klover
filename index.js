@@ -10,6 +10,7 @@ const input = fs.readFileSync("input.kv", "utf8");
 console.log("Parsing DSL...");
 const result = parse(input);
 const ast = result.tree;
+const theme = result.theme || {};
 
 // 3. READ CLIENT SCRIPTS
 console.log("Bundling scripts...");
@@ -71,6 +72,7 @@ const html = `<!DOCTYPE html>
 
         // --- BOOTSTRAP ---
         const ast = ${JSON.stringify(ast, null, 2)};
+        const theme = ${JSON.stringify(theme, null, 2)};
         
         console.log("Initializing Klover Runtime...");
         const runtime = new Runtime(ast);
@@ -79,12 +81,12 @@ const html = `<!DOCTYPE html>
         // Connect Runtime to Renderer
         runtime.onRender = (resolvedTree) => {
             console.log("Re-rendering...");
-            renderApp(resolvedTree, runtime);
+            renderApp(resolvedTree, runtime, theme);
         };
 
         // Initial Render
         const initialResolvedTree = runtime.resolveTree();
-        renderApp(initialResolvedTree, runtime);
+        renderApp(initialResolvedTree, runtime, theme);
         
         console.log("✅ Klover App Ready!");
     </script>

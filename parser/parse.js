@@ -34,24 +34,25 @@ function getIndent(line) {
 // -----------------------------
 function extractProps(parts) {
     const props = {};
+    const validFlags = ["primary", "controls", "autoplay", "muted", "loop"];
 
     parts.forEach(p => {
         if (p.includes("=")) {
             let [key, value] = p.split("=");
 
             // number conversion
-            if (!isNaN(value)) {
+            if (!isNaN(value) && value !== "") {
                 value = Number(value);
             }
 
             // strip quotes
-            if (value?.startsWith('"') && value.endsWith('"')) {
-                value = value.slice(1, -1);
+            if (value?.toString().startsWith('"') && value.toString().endsWith('"')) {
+                value = value.toString().slice(1, -1);
             }
 
             props[key] = value;
-        } else if (!p.includes('"') && p !== "") {
-            // flag props (autoplay, controls)
+        } else if (validFlags.includes(p)) {
+            // flag props (autoplay, controls, etc.)
             props[p] = true;
         }
     });
@@ -140,16 +141,36 @@ function parse(input) {
         // TEXT
         // -------------------------
         else if (trimmed.startsWith("text")) {
-            const match = trimmed.match(/"(.*?)"/);
-
-            if (match) {
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                node = createText(match[1], false, extractProps(propParts));
+            const rest = trimmed.replace(/^text\s+/, "");
+            
+            if (rest.startsWith('"')) {
+                // Quoted string: text "Hello world" size=md
+                const match = rest.match(/"(.*?)"/);
+                if (match) {
+                    const content = match[1];
+                    const after = rest.slice(match.index + match[0].length).trim();
+                    const propParts = after.split(/\s+/).filter(Boolean);
+                    node = createText(content, false, extractProps(propParts));
+                }
             } else {
-                // variable reference
-                node = createText(parts[1], true, {});
+                // Expression or variable: text count * 2 size=md
+                const allParts = rest.split(/\s+/).filter(Boolean);
+                const contentParts = [];
+                const propParts = [];
+                const validFlags = ["primary", "controls", "autoplay", "muted", "loop"];
+
+                allParts.forEach(p => {
+                    // A prop part either has '=' or is a known flag. 
+                    // To be safe, we check if it looks like a prop.
+                    if (p.includes("=") || validFlags.includes(p)) {
+                        propParts.push(p);
+                    } else {
+                        contentParts.push(p);
+                    }
+                });
+
+                const expression = contentParts.join(" ");
+                node = createText(expression, true, extractProps(propParts));
             }
         }
 
@@ -160,31 +181,36 @@ function parse(input) {
             const match = trimmed.match(/"(.*?)"/);
 
             if (match) {
+                const label = match[1];
                 const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                let props = extractProps(propParts);
+                
+                // Separate events from props
+                // Example: onClick=set(count, 0) & set(score, 100) primary
                 let events = null;
+                let propsContent = after;
 
-                if (trimmed.includes("onClick=set(")) {
-                    const exprMatch = trimmed.match(/onClick=set\((.*?)\)/);
-
-                    if (exprMatch) {
-                        let expr = exprMatch[1];
-                        let target = expr.split(/[\s+\-*/=]/)[0].trim();
-
-                        events = {
-                            click: {
-                                target,
-                                expression: expr
+                if (after.includes("onClick=")) {
+                    const clickMatch = after.match(/onClick=(set\(.*?\)(?:\s*&\s*set\(.*?\))*)/);
+                    if (clickMatch) {
+                        const fullAction = clickMatch[1];
+                        const operations = fullAction.split(/\s*&\s*/).map(op => {
+                            const opMatch = op.match(/set\((.*?)\)/);
+                            if (opMatch) {
+                                const expr = opMatch[1];
+                                // Clean target: split by comma or space or operators, take first
+                                const target = expr.split(/[\s,+\-*/=]/)[0].trim();
+                                return { target, expression: expr };
                             }
-                        };
+                            return null;
+                        }).filter(Boolean);
 
-                        delete props.onClick;
+                        events = { click: { operations } };
+                        propsContent = after.replace(clickMatch[0], "").trim();
                     }
                 }
 
-                node = createButton(match[1], props, events);
+                const propParts = propsContent.split(/\s+/).filter(Boolean);
+                node = createButton(label, extractProps(propParts), events);
             }
         }
 

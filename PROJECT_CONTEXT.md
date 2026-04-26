@@ -1,74 +1,73 @@
-# Klover Project Context (V6)
+# Klover Project Context (V7)
 
 Klover is a high-performance, state-aware Domain-Specific Language (DSL) and compiler designed for building complex, interactive UI systems with a rigorous separation of concerns.
 
 ## Core Objective
 To establish a production-grade pipeline that transforms declarative KV syntax into a semantic, machine-readable Abstract Syntax Tree (AST), managed by a dedicated logic runtime.
 
-## V6 Professional Architecture
+## V7 Professional Architecture (Latest)
 
 ### 1. The Language Specification (`input.kv`)
 The DSL implements an indentation-based hierarchy:
 - **State Definitions**: `state [identifier] = [literal]`
-- **Reactive Nodes**: `text [identifier]` (Marks node with `isVariable: true`)
-- **Interactive Nodes**: `button "[label]" onClick=set([expression])`
+- **Reactive Nodes**: `text [expression]` (Supports complex math and ternary logic).
+- **Interactive Nodes**: `button "[label]" onClick=set([op1]) & set([op2])` (Supports batch operations).
 - **Layout Logic**: `column [alignment]` and `row` for structural composition.
-- **Modularity**: `component [Name]:` defines reusable sub-trees.
+- **Visual Nodes**: `image "[url]"` and `video "[url]"` with hardware-accelerated playback props.
 
 ### 2. The Semantic Parser (`parser/parse.js`)
-A deterministic state-machine that processes source text into a structured tree:
-- **Syntax Analysis**: Regular expression-based extraction of tags, labels, and styles.
-- **Hierarchy Mapping**: Indentation-level tracking ensures correct parent-child relationships.
-- **Event Serialization**: `onClick` events are serialized into data objects rather than string fragments:
+A deterministic state-machine with refined expression awareness:
+- **Expression Extraction**: Uses a prefix-based logic to distinguish between node content and properties, allowing for spaces in math (e.g., `count * 5`).
+- **Whitelisted Properties**: Prop extraction is now guarded by a whitelist to prevent expression tokens from being misidentified as flags.
+- **Batch Event Serialization**: Multiple `set()` calls are serialized into an `operations` array:
   ```js
   events: { 
     click: { 
-      target: "count", 
-      expression: "count + 1" 
+      operations: [
+        { target: "count", expression: "count + 1" },
+        { target: "score", expression: "score + 10" }
+      ]
     } 
   }
   ```
-- **Context Awareness**: Distinguishes between static strings and state-variable references during the parse phase.
 
 ### 3. The Logic Runtime (`runtime/runtime.js`)
-A standalone class that serves as the "source of truth" for the application:
-- **State Discovery**: On initialization, it recursively scans the AST to inventory all `state` nodes.
-- **Expression Engine**: Implements a safe `evaluate()` method using dynamic function constructors to compute DSL logic.
-- **State Synchronization**: `setState(key, expr)` allows for programmatic updates to the application's data model without coupling to any specific rendering target.
+A standalone class serving as the "source of truth":
+- **Expression Engine**: Uses a dynamic function constructor for safe, context-aware evaluation of DSL math/logic.
+- **Batch State Updates**: Implements `executeOperations()` to process multiple state changes in a single atomic cycle, reducing re-render overhead.
+- **State Discovery**: Recursively inventories all `state` nodes during initialization.
 
-### 4. Pipeline Orchestration (`index.js`)
-The central entry point that executes the end-to-end lifecycle:
-1. **Read**: Loads the raw `.kv` source.
-2. **Parse**: Generates the initial AST and component registry.
-3. **Runtime Init**: Instantiates the runtime and populates the data model.
-4. **Render Handover**: Passes the `tree`, `components`, and `runtime` to the presentation layer.
-5. **Assembly**: Packages the rendered output with embedded styles into the final artifact.
+### 4. The Presentation Layer (`renderer/render.js`)
+- **Abstracted Styles**: Uses a mapping system (`sizeMap`, `weightMap`) to translate DSL tokens into valid CSS.
+- **Dynamic Mounting**: Automatically clears and re-populates the `#app` container based on runtime state changes.
+- **Theme Persistence**: Styles are driven by a global `theme` object passed through the pipeline.
 
-## File Hierarchy & Detailed Descriptions
+### 5. Pipeline Orchestration (`index.js`)
+- **Bundling**: Aggregates the runtime, renderer, and generated AST into a single `output.html`.
+- **Environment Agnostic**: Code includes safety wrappers for `module.exports`, making it compatible with both Node.js (build-time) and modern Browsers (run-time).
+
+## File Hierarchy
 
 ```text
 klover/
 ├── parser/
-│   └── parse.js          # High-performance DSL parser (AST Generator)
+│   └── parse.js          # DSL Parser with refined expression logic
 ├── runtime/
-│   └── runtime.js        # Decoupled Logic & State Management Engine
+│   └── runtime.js        # Logic Engine (Supports batch operations)
 ├── renderer/
-│   └── render.js         # Presentation Layer (Abstracted from logic)
+│   └── render.js         # Presentation Layer (Theme aware)
 ├── shared/
-│   └── schema.js         # Unified AST Schema & Factory functions
+│   └── schema.js         # Unified AST Schema
 ├── index.js              # Production Pipeline Orchestrator
 ├── input.kv              # Primary DSL Source
-├── package.json          # Node.js Project Configuration
-└── PROJECT_CONTEXT.md    # Detailed Technical Specification (V6)
+├── output.html           # Generated Live Application
+├── debug.json            # Parsed AST (Internal inspection)
+└── PROJECT_CONTEXT.md    # Detailed Technical Specification (V7)
 ```
 
-## Design Philosophy
-- **Strict Decoupling**: No logic resides in the renderer; no rendering logic resides in the parser.
-- **Target Agnostic**: The AST produced in V6 is designed to be render-target agnostic (HTML, JSON, Native).
-- **Data-First**: Interactivity is treated as a first-class data property, not a side-effect.
-
-## Current Status (V6)
-- [x] **Semantic Purity**: Parser produces zero rendering artifacts.
-- [x] **Logic Autonomy**: Runtime operates independently of the DOM.
-- [x] **Standardized Events**: All interactions follow the target/expression schema.
-- [ ] **Renderer Integration**: Final styling and DOM binding are handled in the teammate-managed presentation layer.
+## V7 Status
+- [x] **Math Maturity**: Full support for complex expressions in text nodes.
+- [x] **Batch Interactions**: "RESET ALL" and other multi-state buttons are fully functional.
+- [x] **Prop Integrity**: Whitelist-based parsing prevents prop/expression collisions.
+- [x] **Cross-Platform**: Script bundled files now execute correctly in browsers without ReferenceErrors.
+- [x] **Theme Persistence**: Style context is maintained throughout the reactive lifecycle.
