@@ -1,47 +1,58 @@
 # Klover Project Context
 
-Klover is a lightweight domain-specific language (DSL) and compiler designed to simplify the creation of structured web layouts. It transforms `.kv` files into styled HTML documents.
+Klover is a lightweight, state-aware domain-specific language (DSL) and compiler for building interactive UI layouts.
 
 ## Core Objective
-To provide a human-readable, declarative syntax for building UI components that abstracts away the complexities of HTML/CSS for simple layouts.
+To provide a declarative syntax for building interactive UI components that cleanly separates structure (AST) and logic.
 
-## Current Architecture
+## V5 Hydration Architecture
+
+The project has shifted to a **Client-Side Hydration** model where the Node.js compiler prepares the data, and the browser handles the live reactivity.
 
 ### 1. Source Input (`input.kv`)
-Uses a simple line-based syntax:
-- `text "Content"`: Renders a paragraph.
-- `button "Label"`: Renders a styled button.
+Uses an indentation-based syntax:
+- `state count = 0`: Defines a reactive state variable.
+- `text count`: References a state variable.
+- `button "Add" onClick=set(count + 1)`: Interactive button with a structured event.
 
-### 2. Parser (`/parser/parse.js`)
-- Cleans input lines and filters empty ones.
-- Uses regex to extract values from `text` and `button` declarations.
-- Converts raw strings into structured JSON objects using shared schemas.
+### 2. Compiler (Node.js / `index.js`)
+- **Parsing**: `parser/parse.js` transforms KV text into a semantic AST.
+- **Serialization**: The compiler serializes the `tree` (AST) and the initial `state` into JSON blocks within the final HTML.
+- **Bundling**: It embeds a browser-compatible `Runtime` and `Renderer` directly into the `<script>` tags of `output.html`.
 
-### 3. Shared Layer (`/shared/schema.js`)
-- Defines the data structures (schemas) for all Klover elements.
-- Ensures consistency between the parser and the renderer.
+### 3. Client Runtime (Browser)
+- **Logic Engine**: A browser-side `Runtime` class manages state and expression evaluation using `new Function`.
+- **Reactivity**: When `setState` is called, the runtime triggers a full re-render of the app via `renderApp`.
 
-### 4. Renderer (`/renderer/render.js`)
-- Iterates through the structured elements.
-- Maps each element type to its corresponding HTML representation.
-- Wraps elements in a `.column` container for layout.
+### 4. Client Renderer (Browser / `renderer/render.js`)
+- **DOM-Based**: Uses `document.createElement` and DOM APIs instead of string concatenation.
+- **Dynamic Variable Binding**: Text nodes check `isVariable` and pull live values from the browser runtime.
+- **Event Binding**: Uses `addEventListener` to hook up the `onClick` event data to the live runtime.
 
-### 5. Entry Point (`index.js`)
-- Orchestrates the full lifecycle: Read -> Parse -> Render -> Wrap -> Write.
-- Injects a standard CSS theme into the final HTML output.
+## File Hierarchy & Descriptions
 
-## Technical Stack
-- **Language**: Node.js (JavaScript)
-- **Output**: HTML5 / CSS3
-- **Dependencies**: Native `fs` module.
+```text
+klover/
+├── parser/
+│   └── parse.js          # Semantic DSL parser (Produces Clean AST)
+├── runtime/
+│   └── runtime.js        # Logic engine (Node-side reference)
+├── renderer/
+│   └── render.js         # DOM-based renderer (Browser-ready)
+├── shared/
+│   └── schema.js         # AST node factory functions
+├── input.kv              # Primary DSL source file
+├── index.js              # Compiler & Bundler (Generates output.html)
+└── PROJECT_CONTEXT.md    # Technical documentation (this file)
+```
 
-## Future Roadmap (Planned)
-- [ ] Add support for `image "url"` element.
-- [ ] Implement nested containers (e.g., `row { ... }`).
-- [ ] Allow inline styling or classes via KV syntax.
-- [ ] Add a development server with hot-reloading for `.kv` files.
+## Current Status
+- [x] **V5 Hydration Model**: Full end-to-end interactivity achieved.
+- [x] **Stateful DOM**: Renderer correctly visualizes runtime state changes.
+- [x] **Live Events**: Buttons successfully trigger state updates in the browser.
+- [ ] **Component System**: The browser-side renderer needs to be updated to support the custom component definitions parsed in `parser/parse.js`.
 
 ## Design Philosophy
-- **Simplicity**: No complex nesting or logic in the DSL.
-- **Visual Excellence**: Default output should look modern and professional (Glassmorphism, clean typography).
-- **Extensibility**: Easy to add new element types by updating schema, parser, and renderer.
+- **Clean Source**: The `.kv` file remains pure and declarative.
+- **Single-File Output**: The compiler produces a standalone `output.html` that contains everything needed to run the app (Data + Runtime + UI).
+- **DOM Reactivity**: UI updates are driven by state changes, moving away from static server-side rendering.

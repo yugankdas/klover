@@ -1,16 +1,5 @@
-theme dark
-
-component Card:
-    column center:
-        text "Welcome" heading
-        image "https://picsum.photos/200" hero
-        button "Start" primary
+state count = 0
 
 column:
-    text "App Title" heading
-
-    row:
-        Card
-        Card
-
-    text "Footer"
+    text count
+    button "Add" onClick=set(count + 1)
