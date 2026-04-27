@@ -1,0 +1,47 @@
+{
+    "name": "klover-vscode",
+    "displayName": "Klover",
+    "description": "Klover language support",
+    "version": "0.0.1",
+    "publisher": "your-name",
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yugankdas/klover"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "icon": "images/klover.png",
+    "contributes": {
+        "languages": [
+            {
+                "id": "klover",
+                "aliases": [
+                    "Klover",
+                    "klover"
+                ],
+                "extensions": [
+                    ".kv"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "klover",
+                "scopeName": "source.klover",
+                "path": "./syntaxes/klover.tmLanguage.json"
+            }
+        ],
+        "iconThemes": [
+            {
+                "id": "klover-icons",
+                "label": "Klover Icons",
+                "path": "./icons/klover-icon-theme.json"
+            }
+        ]
+    }
+}

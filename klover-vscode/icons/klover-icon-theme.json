@@ -1,0 +1,10 @@
+{
+    "iconDefinitions": {
+        "kloverFile": {
+            "iconPath": "./klover-file.png"
+        }
+    },
+    "fileExtensions": {
+        "kv": "kloverFile"
+    }
+}
