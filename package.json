@@ -2,7 +2,13 @@
     "name": "klover",
     "version": "1.0.0",
     "main": "index.js",
+    "bin": {
+        "klover": "./cli/index.js"
+    },
     "scripts": {
         "start": "node index.js"
+    },
+    "dependencies": {
+        "chokidar": "^5.0.0"
     }
 }
