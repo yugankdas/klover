@@ -1,76 +1,42 @@
 #!/usr/bin/env node
-
-const { build } = require("../index");
 const chokidar = require("chokidar");
+const path = require("path");
+const { build } = require("../index.js");
 
-const args = process.argv.slice(2);
-const command = args[0];
+const command = process.argv[2];
+const file = process.argv[3] || "input.kv";
 
-// 🔥 FLAGS
-const isDebug = args.includes("--debug");
-const noRender = args.includes("--no-render");
-
-// helper
-function runBuild(file = "input.kv") {
-    build(file, "output.html", {
-        debug: isDebug,
-        noRender
-    });
-}
-
-// ------------------
-// BUILD
-// ------------------
-if (command === "build") {
-    runBuild();
-}
-
-// ------------------
-// RUN FILE
-// ------------------
-else if (command === "run") {
-    const file = args[1] && !args[1].startsWith("--") ? args[1] : "input.kv";
-    runBuild(file);
-}
-
-// ------------------
-// DEV MODE
-// ------------------
-else if (command === "dev") {
-    const file = args[1] && !args[1].startsWith("--") ? args[1] : "input.kv";
-
-    console.log(`👀 Watching ${file}...`);
-    console.log(`Debug: ${isDebug} | NoRender: ${noRender}`);
-
-    runBuild(file);
-
-    chokidar.watch(file).on("change", () => {
-        console.log("🔁 Rebuilding...");
-        runBuild(file);
-    });
-}
-
-// ------------------
-// DEBUG SHORTCUT (🔥 USE THIS)
-// ------------------
-else if (command === "debug") {
-    runBuild("input.kv");
-}
-
-// ------------------
-// DEFAULT
-// ------------------
-else {
+function showHelp() {
     console.log(`
-Klover CLI
+🚀 Klover CLI V7
 
-Commands:
-  klover build
-  klover dev [file]
-  klover run <file>
+Usage:
+  klover build <file>   - Build a .kv file to output.html
+  klover dev <file>     - Watch a .kv file and re-build on changes
+  klover help           - Show this message
 
-Debug:
-  klover debug --no-render
-  klover build --debug
-`);
+Example:
+  klover build input.kv
+  klover dev input.kv
+    `);
 }
+
+switch (command) {
+    case "build":
+        build(file, "output.html");
+        break;
+    case "dev":
+        console.log(`👀 Watching for changes in: ${file}`);
+        // Initial build
+        build(file, "output.html");
+        
+        // Watch
+        chokidar.watch(file, { usePolling: true }).on("change", (event) => {
+            console.log(`\n🔄 Change detected in ${path.basename(file)}, rebuilding...`);
+            build(file, "output.html");
+        });
+        break;
+    case "help":
+    default:
+        showHelp();
+}

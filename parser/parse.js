@@ -246,17 +246,33 @@ function parse(input) {
         // COLUMN
         // -------------------------
         else if (trimmed.startsWith("column")) {
-            const align = parts[1]?.replace(":", "") || "start";
+            const rest = trimmed.replace(/^column\s+/, "").replace(/:$/, "");
+            const allParts = rest.split(/\s+/).filter(Boolean);
+            const propParts = [];
+            let align = "start";
 
-            node = createColumn([], align, {});
+            allParts.forEach(p => {
+                if (p.includes("=")) {
+                    const [k, v] = p.split("=");
+                    if (k === "align") align = v;
+                    propParts.push(p);
+                } else if (!p.includes('"')) {
+                    propParts.push(p);
+                }
+            });
+
+            node = createColumn([], align, extractProps(propParts));
         }
 
         // -------------------------
         // ROW
         // -------------------------
         else if (trimmed.startsWith("row")) {
-            node = createRow([], {});
+            const rest = trimmed.replace(/^row\s+/, "").replace(/:$/, "");
+            const propParts = rest.split(/\s+/).filter(Boolean);
+            node = createRow([], extractProps(propParts));
         }
+
 
         // -------------------------
         // COMPONENT USAGE

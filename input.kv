@@ -1,4 +1,40 @@
-column:
-    text "Hello world" size=lg weight=bold
-    button "Click me" primary onClick=set(count + 1)
-    video "demo.mp4" autoplay controls
+state balance = 1000
+state cart_count = 0
+state is_member = true
+state shop_name = "Klover Premium Store"
+
+component Product:
+    column gap=12:
+        image "https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+        text "Premium Sneakers" size=lg weight=bold
+        text "Price: $150" size=sm
+        button "Add to Cart" onClick=set(cart_count + 1) & set(balance - 150)
+
+column gap=40:
+    # Header
+    row gap=20:
+        text shop_name size=xl weight=bold
+        if is_member:
+            text "GOLD MEMBER" primary size=xs weight=bold
+
+    # Stats Row
+    row gap=40:
+        column:
+            text "Balance" size=sm weight=medium
+            text balance size=2xl weight=bold
+        column:
+            text "Cart Items" size=sm weight=medium
+            text cart_count size=2xl weight=bold
+
+    # Product Grid
+    row gap=30:
+        Product
+        Product
+
+    # Video Demo
+    column gap=10:
+        text "See them in action" size=md weight=semibold
+        video "https://www.w3schools.com/html/mov_bbb.mp4" controls width=400
+
+    # Actions
+    button "Reset Shop" onClick=set(balance = 1000) & set(cart_count = 0)
