@@ -1,0 +1,11 @@
+state items = ["Apple", "Banana", "Cherry"]
+state show = true
+
+column:
+    if show:
+        text "List of fruits:" weight=bold
+        repeat items:
+            row:
+                text item
+                button "Remove" onClick=set(items, items.filter(x => x !== item))
+    button "Toggle List" onClick=set(show, !show)

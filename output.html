@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover V7 App</title>
+    <title>Klover App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -22,35 +22,97 @@
         }
     </script>
     <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
         body { 
-            background-color: #f1f5f9; 
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh;
             margin: 0;
             font-family: 'Inter', sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
         }
         .klover-app { 
-            background: white; 
-            border-radius: 1.5rem; 
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem; 
             padding: 3rem; 
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            min-width: 400px;
-            max-width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            min-width: 500px;
+            max-width: 95%;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        /* Default spacing for nodes */
-        p { margin-bottom: 0.5rem; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        p { margin-bottom: 0.5rem; line-height: 1.5; }
         button { 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
-        button:active { transform: scale(0.95); }
+        button:hover { 
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        button:active { transform: translateY(0); }
+        
+        .btn-primary {
+            background: var(--primary) !important;
+            border: none !important;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark) !important;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.23);
+        }
+        
+        .btn-danger {
+            background: #ef4444 !important;
+            border: none !important;
+        }
+        .btn-danger:hover { background: #dc2626 !important; }
+
+        img {
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        img:hover { transform: scale(1.02); }
+
+        /* V9 Patching Animation */
+        [data-kv-path] {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="klover-app"><div style="display:flex; flex-direction:column; align-items:center"><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 20px"><p class="text-xl font-bold">Klover Premium Store</p></div><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 40px"><div style="display:flex; flex-direction:column; align-items:center"><p class="text-sm font-medium">Balance</p><p class="text-2xl font-bold">1000</p></div><div style="display:flex; flex-direction:column; align-items:center"><p class="text-sm font-medium">Cart Items</p><p class="text-2xl font-bold">0</p></div></div><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 30px"><div style="display:flex; flex-direction:column; align-items:center; gap: 12px"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" /><p class="text-lg font-bold">Premium Sneakers</p><p class="text-sm">Price: $150</p><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count + 1&quot;},{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance - 150&quot;}])">Add to Cart</button></div><div style="display:flex; flex-direction:column; align-items:center; gap: 12px"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" /><p class="text-lg font-bold">Premium Sneakers</p><p class="text-sm">Price: $150</p><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count + 1&quot;},{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance - 150&quot;}])">Add to Cart</button></div></div><div style="display:flex; flex-direction:column; align-items:center; gap: 10px"><p class="text-base font-semibold">See them in action</p><video src="https://www.w3schools.com/html/mov_bbb.mp4" controls></video></div><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance = 1000&quot;},{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count = 0&quot;}])">Reset Shop</button></div></div>
+        <div class="klover-app"><div style="display:flex;flex-direction:column;align-items:center;"><div data-kv-path="children[0]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 64px""><p data-kv-path="children[0].children[0]" class="text-4xl font-bold">Futuristic Tech Store</p><div data-kv-path="children[0].children[1]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 16px""><button data-kv-path="children[0].children[1].children[0]" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;viewCart&quot;,&quot;expression&quot;:&quot;viewCart, !viewCart&quot;}]', '{}')">Cart</button><p data-kv-path="children[0].children[1].children[1]" class="text-lg font-bold">0</p></div></div><div data-kv-path="children[1].children[0]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 32px""><div data-kv-path="children[1].children[0].children[0].children[0]" style="display:flex;flex-direction:column;align-items:center; gap: 12px""><img data-kv-path="children[1].children[0].children[0].children[0].children[0]" src="https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400" /><div data-kv-path="children[1].children[0].children[0].children[0].children[1]" style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[1].children[0].children[0].children[0].children[1].children[0]" class="text-xl font-bold">Quantum CPU</p><p data-kv-path="children[1].children[0].children[0].children[0].children[1].children[1]" class="text-lg">999</p></div><button data-kv-path="children[1].children[0].children[0].children[0].children[2]" class="btn-primary px-4 py-2 rounded-lg cursor-pointer" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;cart&quot;,&quot;expression&quot;:&quot;cart, [...cart, product]&quot;}]', '{&quot;item&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Quantum CPU&quot;,&quot;price&quot;:999,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400&quot;},&quot;index&quot;:0,&quot;product&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Quantum CPU&quot;,&quot;price&quot;:999,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400&quot;}}')">Add to Cart</button></div><div data-kv-path="children[1].children[0].children[0].children[1]" style="display:flex;flex-direction:column;align-items:center; gap: 12px""><img data-kv-path="children[1].children[0].children[0].children[1].children[0]" src="https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400" /><div data-kv-path="children[1].children[0].children[0].children[1].children[1]" style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[1].children[0].children[0].children[1].children[1].children[0]" class="text-xl font-bold">Neural GPU</p><p data-kv-path="children[1].children[0].children[0].children[1].children[1].children[1]" class="text-lg">1499</p></div><button data-kv-path="children[1].children[0].children[0].children[1].children[2]" class="btn-primary px-4 py-2 rounded-lg cursor-pointer" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;cart&quot;,&quot;expression&quot;:&quot;cart, [...cart, product]&quot;}]', '{&quot;item&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Neural GPU&quot;,&quot;price&quot;:1499,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400&quot;},&quot;index&quot;:1,&quot;product&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Neural GPU&quot;,&quot;price&quot;:1499,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400&quot;}}')">Add to Cart</button></div></div></div></div>
     </div>
 
     
@@ -59,12 +121,17 @@
             // --- EMBEDDED SCRIPTS ---
             
             // 1. Runtime
-            class Runtime {
+            // runtime/runtime.js - V8 with Diffing Support
+class Runtime {
     constructor(ast, components = {}) {
         this.ast = ast;
         this.components = components;
         this.state = {};
         this.onRender = null;
+
+        // V8: Track previous tree for diffing
+        this.previousTree = null;
+        this.currentTree = null;
     }
 
     // -------------------------
@@ -100,6 +167,16 @@
         const values = Object.values(context);
 
         try {
+            // Handle chained operations (a & b & c)
+            if (typeof expr === 'string' && expr.includes('&')) {
+                const parts = expr.split('&');
+                let lastResult = null;
+                for (const part of parts) {
+                    const fn = new Function(...keys, "return " + part.trim());
+                    lastResult = fn(...values);
+                }
+                return lastResult;
+            }
             return new Function(...keys, "return " + expr.trim())(...values);
         } catch (e) {
             console.error("Evaluation Error:", e, "Expression:", expr);
@@ -121,21 +198,91 @@
         }
 
         const newValue = this.evaluate(finalExpr);
-        this.state[actualTarget] = newValue;
+        if (newValue !== null && newValue !== undefined) {
+            this.state[actualTarget] = newValue;
+            console.log(`🔄 State updated: ${actualTarget} = ${newValue}`);
+        }
 
-        if (this.onRender) this.onRender(this.resolveTree());
+        // Trigger re-render with new tree
+        if (this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
     }
 
-    executeOperations(operations) {
+    executeOperations(operations, scope = {}) {
         if (!Array.isArray(operations)) return;
+        
+        let changed = false;
         operations.forEach(op => {
-            const newValue = this.evaluate(op.expression);
-            // Robust target extraction: op.target might still have spaces or operators if the parser was loose
-            const cleanTarget = op.target.trim();
-            this.state[cleanTarget] = newValue;
-            console.log(`Update: ${cleanTarget} =`, newValue);
+            const newValue = this.evaluate(op.expression, scope);
+            if (newValue !== null && newValue !== undefined) {
+                const cleanTarget = op.target.trim();
+                if (this.state[cleanTarget] !== newValue) {
+                    this.state[cleanTarget] = newValue;
+                    console.log(`🔄 Operation: ${cleanTarget} = ${newValue}`);
+                    changed = true;
+                }
+            }
         });
-        if (this.onRender) this.onRender(this.resolveTree());
+
+        if (changed && this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
+    }
+
+    // -------------------------
+    // V8: DIFF TWO TREES
+    // -------------------------
+    diffTree(oldTree, newTree, changes = [], path = "") {
+        if (!oldTree && !newTree) return changes;
+        if (!oldTree) {
+            changes.push({ type: "added", path, node: newTree });
+            return changes;
+        }
+        if (!newTree) {
+            changes.push({ type: "removed", path, node: oldTree });
+            return changes;
+        }
+
+        // Different types
+        if (oldTree.type !== newTree.type) {
+            changes.push({ type: "replaced", path, old: oldTree, new: newTree });
+            return changes;
+        }
+
+        // Text nodes - check value change
+        if (oldTree.type === "text" && oldTree.value !== newTree.value) {
+            changes.push({
+                type: "changed",
+                path: path ? `${path}.value` : "value",
+                old: oldTree.value,
+                new: newTree.value
+            });
+        }
+
+        // Button nodes - check label change
+        if (oldTree.type === "button" && oldTree.label !== newTree.label) {
+            changes.push({
+                type: "changed",
+                path: path ? `${path}.label` : "label",
+                old: oldTree.label,
+                new: newTree.label
+            });
+        }
+
+        // Recursively check children
+        const oldChildren = oldTree.children || [];
+        const newChildren = newTree.children || [];
+        const maxLen = Math.max(oldChildren.length, newChildren.length);
+
+        for (let i = 0; i < maxLen; i++) {
+            const newPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+            this.diffTree(oldChildren[i], newChildren[i], changes, newPath);
+        }
+
+        return changes;
     }
 
     // -------------------------
@@ -144,39 +291,66 @@
     resolveNode(node, scope = {}) {
         if (!node) return null;
 
+        let resolved = null;
+
         // -------------------------
-        // COMPONENT
+        // STATE (Non-visual)
         // -------------------------
-        if (node.type === "component") {
+        if (node.type === "state") {
+            return null;
+        }
+        
+        else if (node.type === "component") {
             const comp = this.components[node.name];
             if (!comp || !comp.root) return null;
-            return this.resolveNode(comp.root, scope);
+
+            // Evaluate props in current scope
+            const resolvedProps = {};
+            if (node.props) {
+                for (const [key, expr] of Object.entries(node.props)) {
+                    const val = this.evaluate(String(expr), scope);
+                    resolvedProps[key] = val !== null ? val : expr;
+                }
+            }
+
+            // Merge resolved props with existing scope
+            const mergedScope = { ...scope, ...resolvedProps };
+            resolved = this.resolveNode(comp.root, mergedScope);
         }
 
         // -------------------------
         // TEXT (VARIABLE/EXPRESSION)
         // -------------------------
-        if (node.type === "text" && node.isVariable) {
+        else if (node.type === "text" && node.isVariable) {
             const value = this.evaluate(node.value, scope);
-
-            return {
+            resolved = {
                 ...node,
-                value: value !== null ? value : "",
+                value: value !== null && value !== undefined ? value : "",
                 isVariable: false
             };
         }
 
+        // -------------------------
+        // IMAGE & VIDEO
+        // -------------------------
+        else if ((node.type === "image" || node.type === "video") && node.isVariable) {
+            const value = this.evaluate(node.src, scope);
+            resolved = {
+                ...node,
+                src: value !== null && value !== undefined ? value : "",
+                isVariable: false
+            };
+        }
 
         // -------------------------
-        // IF
+        // IF CONDITIONAL
         // -------------------------
-        if (node.type === "if") {
+        else if (node.type === "if") {
             const result = this.evaluate(node.condition, scope);
-
             if (!result) return null;
 
-            return {
-                ...node,
+            resolved = {
+                type: "fragment",
                 children: node.children
                     .map(child => this.resolveNode(child, scope))
                     .filter(Boolean)
@@ -184,36 +358,36 @@
         }
 
         // -------------------------
-        // REPEAT
+        // REPEAT LOOP
         // -------------------------
-        if (node.type === "repeat") {
+        else if (node.type === "repeat") {
             const list = this.state[node.source] || [];
-
             const expanded = [];
 
-            list.forEach(item => {
+            list.forEach((item, index) => {
                 const newScope = {
                     ...scope,
-                    [node.itemName]: item
+                    [node.itemName]: item,
+                    index: index
                 };
 
                 node.children.forEach(child => {
-                    const resolved = this.resolveNode(child, newScope);
-                    if (resolved) expanded.push(resolved);
+                    const resChild = this.resolveNode(child, newScope);
+                    if (resChild) expanded.push(resChild);
                 });
             });
 
-            return {
+            resolved = {
                 type: "fragment",
                 children: expanded
             };
         }
 
         // -------------------------
-        // GENERIC NODE
+        // GENERIC NODE (with children)
         // -------------------------
-        if (node.children) {
-            return {
+        else if (node.children) {
+            resolved = {
                 ...node,
                 children: node.children
                     .map(child => this.resolveNode(child, scope))
@@ -221,14 +395,93 @@
             };
         }
 
-        return { ...node };
+        // -------------------------
+        // LEAF NODE (no children)
+        // -------------------------
+        else {
+            resolved = { ...node };
+        }
+
+        // BAKE SCOPE INTO NODES WITH EVENTS
+        if (resolved && node.events) {
+            resolved._scope = { ...scope };
+        }
+
+        return resolved;
     }
 
     // -------------------------
-    // ENTRY POINT
+    // V8: ENTRY POINT with tracking
     // -------------------------
     resolveTree() {
-        return this.resolveNode(this.ast);
+        // Store previous tree before resolving new one
+        const oldTree = this.currentTree;
+
+        // Resolve new tree
+        const newTree = this.resolveNode(this.ast);
+
+        // Store for next diff
+        this.previousTree = oldTree;
+        this.currentTree = newTree;
+
+        // Calculate diff if we have both trees
+        let changes = null;
+        if (this.previousTree && this.currentTree) {
+            changes = this.diffTree(this.previousTree, this.currentTree);
+            if (changes.length > 0) {
+                console.log(`📊 V8 Diff: ${changes.length} change(s) detected`);
+                changes.forEach(change => {
+                    console.log(`   - ${change.type}: ${change.path || ''}`,
+                        change.old !== undefined ? `"${change.old}" → "${change.new}"` : '');
+                });
+            }
+        }
+
+        // Attach changes to result for renderer optimization
+        if (changes && changes.length > 0) {
+            newTree._changes = changes;
+        }
+
+        return newTree;
+    }
+
+    // -------------------------
+    // HELPER: Get current state
+    // -------------------------
+    getState() {
+        return { ...this.state };
+    }
+
+    // -------------------------
+    // HELPER: Set multiple states at once
+    // -------------------------
+    setMultipleState(updates) {
+        let changed = false;
+        for (const [key, value] of Object.entries(updates)) {
+            if (this.state[key] !== value) {
+                this.state[key] = value;
+                changed = true;
+            }
+        }
+        if (changed && this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
+    }
+
+    // -------------------------
+    // HELPER: Reset all state
+    // -------------------------
+    resetState() {
+        const keys = Object.keys(this.state);
+        for (const key of keys) {
+            delete this.state[key];
+        }
+        this.extractState(this.ast);
+        if (this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
     }
 }
 
@@ -236,9 +489,10 @@
             window.Runtime = Runtime;
 
             // 2. Renderer
-            // renderer/render.js - V7 String Renderer (FIXED)
+            // renderer/render.js - V8 Diff-Ready Renderer (FIXED)
+
+// Helper: Escape HTML to prevent XSS attacks
 function escapeHtml(str) {
-    // FIX: Handle undefined/null
     if (str === undefined || str === null) return "";
     return String(str)
         .replace(/&/g, "&amp;")
@@ -248,13 +502,15 @@ function escapeHtml(str) {
         .replace(/'/g, "&#39;");
 }
 
+// Helper: Convert props to CSS classes and styles
 function applyProps(node, theme = {}) {
-    let classes = [];
-    let styleRules = [];
-
-    if (!node || !node.props) return { class: "", style: "" };
+    // FIX: Check if node exists and has props
+    if (!node) return { class: "", style: "" };
+    if (!node.props) return { class: "", style: "" };
 
     const props = node.props;
+    let classes = [];
+    let styles = [];
 
     // Size mapping
     const sizeMap = {
@@ -263,132 +519,213 @@ function applyProps(node, theme = {}) {
         "3xl": "text-3xl", "4xl": "text-4xl"
     };
 
+    // Weight mapping
     const weightMap = {
         normal: "font-normal", medium: "font-medium",
-        semibold: "font-semibold", bold: "font-bold", extrabold: "font-extrabold"
+        semibold: "font-semibold", bold: "font-bold",
+        extrabold: "font-extrabold"
     };
 
-    if (props.size && sizeMap[props.size]) classes.push(sizeMap[props.size]);
-    if (props.weight && weightMap[props.weight]) classes.push(weightMap[props.weight]);
+    // Apply size
+    if (props.size && sizeMap[props.size]) {
+        classes.push(sizeMap[props.size]);
+    }
 
-    if (props.primary) {
-        classes.push("bg-primary", "text-white");
+    // Apply weight
+    if (props.weight && weightMap[props.weight]) {
+        classes.push(weightMap[props.weight]);
+    }
+
+    // Apply primary button styling
+    if (props.primary === true || props.primary === "true") {
+        classes.push("btn-primary");
         classes.push("px-4", "py-2", "rounded-lg", "cursor-pointer");
     }
 
+    // Apply danger button styling
+    if (props.danger === true || props.danger === "true") {
+        classes.push("btn-danger");
+    }
+
+    // Apply gap for flex containers
     if (props.gap !== undefined) {
-        styleRules.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
+        styles.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
+    }
+
+    // Apply theme colors
+    if (theme && theme.primary && !props.primary) {
+        classes.push(`text-[${theme.primary}]`);
     }
 
     return {
         class: classes.length ? ` class="${classes.join(' ')}"` : "",
-        styleRules: styleRules
+        style: styles.length ? ` style="${styles.join('; ')}"` : ""
     };
 }
 
-function renderNode(node, runtime, theme = {}) {
+// Main render function - converts node to HTML string
+function renderNode(node, runtime, theme = {}, path = "") {
+    // Handle null/undefined
     if (!node) return "";
 
-    // TEXT
+    const pathAttr = path ? ` data-kv-path="${path}"` : "";
+
+    // --------------------------------------------
+    // TEXT NODE
+    // --------------------------------------------
     if (node.type === "text") {
         const attrs = applyProps(node, theme);
-        let value = node.value;
-        if (value === undefined || value === null) value = "";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<p${attrs.class}${styleAttr}>${escapeHtml(value)}</p>`;
+        const value = escapeHtml(node.value);
+        return `<p${pathAttr}${attrs.class}${attrs.style}>${value}</p>`;
     }
 
-    // BUTTON
+    // --------------------------------------------
+    // BUTTON NODE
+    // --------------------------------------------
     if (node.type === "button") {
         const attrs = applyProps(node, theme);
-        const label = node.label || "Button";
+        const label = escapeHtml(node.label || "Button");
+
+        // Build click handler
         let onclick = "";
-
-        // Default classes for a polished look if not primary
-        const classes = attrs.class || ' class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200"';
-        
-        if (node.events?.click) {
-
-            const click = node.events.click;
-            
-            if (click.operations) {
-                // Multi-operation (V6+)
-                const opsJson = JSON.stringify(click.operations).replace(/"/g, "&quot;");
-                onclick = ` onclick="window.updateOperations(${opsJson})"`;
-            } else if (click.target && click.expression) {
-                // Simple operation
-                onclick = ` onclick="window.updateState('${escapeHtml(click.target)}', '${escapeHtml(click.expression).replace(/'/g, "\\'")}')"`;
-            }
+        if (node.events?.click?.operations) {
+            const ops = JSON.stringify(node.events.click.operations).replace(/"/g, '&quot;');
+            const scope = JSON.stringify(node._scope || {}).replace(/"/g, '&quot;');
+            onclick = ` onclick="window.__klover_executeOperations('${ops}', '${scope}')"`;
         }
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<button${classes}${styleAttr}${onclick}>${escapeHtml(label)}</button>`;
+
+        return `<button${pathAttr}${attrs.class}${attrs.style}${onclick}>${label}</button>`;
     }
 
-
-
-    // VIDEO
+    // --------------------------------------------
+    // VIDEO NODE
+    // --------------------------------------------
     if (node.type === "video") {
         const attrs = applyProps(node, theme);
-        const src = node.src || "";
-        let videoAttrs = ` src="${escapeHtml(src)}"`;
+        const src = escapeHtml(node.src || "");
+
+        let videoAttrs = ` src="${src}"`;
         if (node.props?.controls) videoAttrs += " controls";
         if (node.props?.autoplay) videoAttrs += " autoplay";
         if (node.props?.loop) videoAttrs += " loop";
         if (node.props?.muted) videoAttrs += " muted";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<video${videoAttrs}${attrs.class}${styleAttr}></video>`;
+
+        return `<video${pathAttr}${videoAttrs}${attrs.class}${attrs.style}></video>`;
     }
 
-    // IMAGE
+    // --------------------------------------------
+    // IMAGE NODE
+    // --------------------------------------------
     if (node.type === "image") {
         const attrs = applyProps(node, theme);
-        const src = node.src || "";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<img src="${escapeHtml(src)}"${attrs.class}${styleAttr} />`;
+        const src = escapeHtml(node.src || "");
+        return `<img${pathAttr} src="${src}"${attrs.class}${attrs.style} />`;
     }
 
-    // COLUMN
+    // --------------------------------------------
+    // COLUMN NODE (Vertical Flex Container)
+    // --------------------------------------------
     if (node.type === "column") {
         const attrs = applyProps(node, theme);
+
         let children = "";
         if (node.children && Array.isArray(node.children)) {
-            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
+            children = node.children.map((child, i) => {
+                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+                return renderNode(child, runtime, theme, childPath);
+            }).join("");
         }
-        const styles = ["display:flex", "flex-direction:column", "align-items:center", ...attrs.styleRules];
-        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
+
+        const baseStyle = "display:flex;flex-direction:column;align-items:center;";
+        const existingStyle = attrs.style ? attrs.style.replace('style="', '') : '';
+
+        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${children}</div>`;
     }
 
-    // ROW
+    // --------------------------------------------
+    // ROW NODE (Horizontal Flex Container)
+    // --------------------------------------------
     if (node.type === "row") {
         const attrs = applyProps(node, theme);
+
         let children = "";
         if (node.children && Array.isArray(node.children)) {
-            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
+            children = node.children.map((child, i) => {
+                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+                return renderNode(child, runtime, theme, childPath);
+            }).join("");
         }
-        const styles = ["display:flex", "flex-direction:row", "align-items:center", "flex-wrap:wrap", ...attrs.styleRules];
-        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
+
+        const baseStyle = "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
+        const existingStyle = attrs.style ? attrs.style.replace('style="', '') : '';
+
+        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${children}</div>`;
     }
 
-    // FRAGMENT
+    // --------------------------------------------
+    // FRAGMENT NODE (No wrapper, just children)
+    // --------------------------------------------
     if (node.type === "fragment") {
         if (node.children && Array.isArray(node.children)) {
-            return node.children.map(c => renderNode(c, runtime, theme)).join("");
+            return node.children.map((child, i) => {
+                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+                return renderNode(child, runtime, theme, childPath);
+            }).join("");
         }
         return "";
+    }
+
+    // --------------------------------------------
+    // CUSTOM NODE (Ignore gracefully, don't crash)
+    // --------------------------------------------
+    if (node.type === "custom") {
+        console.warn(`Custom node "${node.name}" not supported, skipping`);
+        return `<!-- Custom node: ${node.name} -->`;
+    }
+
+    // --------------------------------------------
+    // UNKNOWN NODE (Log warning, return empty)
+    // --------------------------------------------
+    if (node.type !== "text" && node.type !== "button" && node.type !== "video" &&
+        node.type !== "image" && node.type !== "column" && node.type !== "row" &&
+        node.type !== "fragment" && node.type !== "custom") {
+        console.warn(`Unknown node type: ${node.type}`);
     }
 
     return "";
 }
 
-function render(tree, options = {}) {
-    const { runtime, theme = {} } = options;
-    if (!runtime) return "<div>Error: No runtime</div>";
+// V8 Diff-Ready Render Function
+function render(newTree, options = {}) {
+    const { runtime, theme = {}, oldTree = null } = options;
 
-    const resolved = runtime.resolveTree ? runtime.resolveTree() : tree;
-    const html = renderNode(resolved, runtime, theme);
+    // Validate runtime
+    if (!runtime) {
+        console.error("❌ No runtime provided to renderer");
+        return "<div>Error: No runtime provided</div>";
+    }
+
+    // Resolve the tree (expand variables, components, loops)
+    let resolvedTree = newTree;
+    if (runtime.resolveTree) {
+        resolvedTree = runtime.resolveTree();
+    } else if (runtime.resolveNode) {
+        resolvedTree = runtime.resolveNode(newTree);
+    }
+
+    // Generate HTML - Start path at empty for root
+    const html = renderNode(resolvedTree, runtime, theme, "");
+
+    // V9: Smart DOM Patching Check
+    if (resolvedTree._changes) {
+        console.log(`🚀 Smart Patching Mode: ${resolvedTree._changes.length} changes`);
+    }
+
+    // Wrap with app container
     return `<div class="klover-app">${html || ""}</div>`;
 }
 
+// Export functions
 
             window.render = render;
             window.renderNode = renderNode;
@@ -396,34 +733,94 @@ function render(tree, options = {}) {
             // --- BOOTSTRAP ---
 
 
-        let state = {"balance":1000,"cart_count":0,"is_member":true,"shop_name":"Klover Premium Store"};
-        const rawAst = {"type":"column","align":"start","children":[{"type":"state","key":"balance","value":1000},{"type":"state","key":"cart_count","value":0},{"type":"state","key":"is_member","value":true},{"type":"state","key":"shop_name","value":"Klover Premium Store"},{"type":"row","children":[{"type":"text","value":"shop_name","isVariable":true,"props":{"size":"xl","weight":"bold"}},{"type":"if","condition":"is_member","children":[{"type":"text","value":"GOLD MEMBER","isVariable":false,"props":{"primary":true,"size":"xs","weight":"bold"}}]}],"props":{"gap":20}},{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"Balance","isVariable":false,"props":{"size":"sm","weight":"medium"}},{"type":"text","value":"balance","isVariable":true,"props":{"size":"2xl","weight":"bold"}}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"Cart Items","isVariable":false,"props":{"size":"sm","weight":"medium"}},{"type":"text","value":"cart_count","isVariable":true,"props":{"size":"2xl","weight":"bold"}}],"props":{}}],"props":{"gap":40}},{"type":"row","children":[{"type":"component","name":"Product"},{"type":"component","name":"Product"}],"props":{"gap":30}},{"type":"column","align":"start","children":[{"type":"text","value":"See them in action","isVariable":false,"props":{"size":"md","weight":"semibold"}},{"type":"video","src":"https://www.w3schools.com/html/mov_bbb.mp4","props":{"controls":true,"width":400}}],"props":{"gap":10}},{"type":"button","label":"Reset Shop","props":{},"events":{"click":{"operations":[{"target":"balance","expression":"balance = 1000"},{"target":"cart_count","expression":"cart_count = 0"}]}}}],"props":{}};
+        let state = {"cart":[],"products":[{"id":1,"name":"Quantum CPU","price":999,"img":"https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400"},{"id":2,"name":"Neural GPU","price":1499,"img":"https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400"}],"viewCart":false};
+        const rawAst = {"type":"column","align":"start","children":[{"type":"state","key":"cart","value":[]},{"type":"state","key":"products","value":[{"id":1,"name":"Quantum CPU","price":999,"img":"https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400"},{"id":2,"name":"Neural GPU","price":1499,"img":"https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400"}]},{"type":"state","key":"viewCart","value":false},{"type":"row","children":[{"type":"text","value":"Futuristic Tech Store","isVariable":false,"props":{"size":"4xl","weight":"bold"}},{"type":"row","children":[{"type":"button","label":"Cart","props":{},"events":{"click":{"operations":[{"target":"viewCart","expression":"viewCart, !viewCart"}]}}},{"type":"text","value":"cart.length","isVariable":true,"props":{"size":"lg","weight":"bold"}}],"props":{"gap":16}}],"props":{"gap":64}},{"type":"if","condition":"!viewCart","children":[{"type":"row","children":[{"type":"repeat","source":"products","itemName":"item","children":[{"type":"component","name":"ProductCard","props":{"product":"item"}}]}],"props":{"gap":32}}]},{"type":"if","condition":"viewCart","children":[{"type":"column","align":"start","children":[{"type":"row","children":[{"type":"text","value":"Your Cart","isVariable":false,"props":{"size":"3xl","weight":"bold"}},{"type":"button","label":"Back","props":{},"events":{"click":{"operations":[{"target":"viewCart","expression":"viewCart, false"}]}}}],"props":{}},{"type":"if","condition":"cart.length === 0","children":[{"type":"text","value":"Your cart is lonely.","isVariable":false,"props":{"size":"lg"}}]},{"type":"column","align":"start","children":[{"type":"repeat","source":"cart","itemName":"item","children":[{"type":"row","children":[{"type":"image","src":"item.img","props":{},"isVariable":true},{"type":"column","align":"start","children":[{"type":"text","value":"item.name","isVariable":true,"props":{"weight":"bold"}},{"type":"text","value":"item.price","isVariable":true,"props":{}}],"props":{}}],"props":{"gap":20}}]}],"props":{"gap":12}},{"type":"if","condition":"cart.length > 0","children":[{"type":"button","label":"Checkout - Clear Cart","props":{},"events":{"click":{"operations":[{"target":"cart","expression":"cart, []"},{"target":"viewCart","expression":"viewCart, false"}]}}}]}],"props":{"gap":24}}]}],"props":{}};
         const theme = {};
-        const components = {"Product":{"root":{"type":"column","align":"start","children":[{"type":"image","src":"https://images.unsplash.com/photo-1542291026-7eec264c27ff","props":{}},{"type":"text","value":"Premium Sneakers","isVariable":false,"props":{"size":"lg","weight":"bold"}},{"type":"text","value":"Price: $150","isVariable":false,"props":{"size":"sm"}},{"type":"button","label":"Add to Cart","props":{},"events":{"click":{"operations":[{"target":"cart_count","expression":"cart_count + 1"},{"target":"balance","expression":"balance - 150"}]}}}],"props":{"gap":12}}}};
+        const components = {"ProductCard":{"root":{"type":"column","align":"start","children":[{"type":"image","src":"product.img","props":{},"isVariable":true},{"type":"column","align":"start","children":[{"type":"text","value":"product.name","isVariable":true,"props":{"weight":"bold","size":"xl"}},{"type":"text","value":"product.price","isVariable":true,"props":{"size":"lg"}}],"props":{}},{"type":"button","label":"Add to Cart","props":{"primary":true},"events":{"click":{"operations":[{"target":"cart","expression":"cart, [...cart, product]"}]}}}],"props":{"gap":12}}}};
 
         // Initialize client-side runtime
         const kRuntime = new Runtime(rawAst, components);
         kRuntime.state = state;
 
         // Shared render function
-        function refresh() {
+        function refresh(preResolvedTree) {
             try {
                 const root = document.getElementById("root");
-                const html = render(rawAst, { runtime: kRuntime, theme });
-                root.innerHTML = html;
-                console.log("UI Refreshed. State:", kRuntime.state);
+                const newTree = preResolvedTree || kRuntime.resolveTree();
+                
+                if (newTree._changes && newTree._changes.length > 0) {
+                    console.log("⚡ Klover V9: Applying surgical patches...");
+                    applyPatches(newTree._changes, root.firstElementChild);
+                } else {
+                    console.log("🔄 Klover V9: Full re-render triggered");
+                    const html = render(rawAst, { runtime: kRuntime, theme });
+                    root.innerHTML = html;
+                }
+                console.log("UI Updated. State:", kRuntime.state);
             } catch (err) {
                 console.error("Refresh Error:", err);
             }
         }
 
+        function applyPatches(changes, rootEl) {
+            changes.forEach(change => {
+                try {
+                    const el = rootEl.querySelector(`[data-kv-path="${change.path}"]`) || 
+                               (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
+
+                    if (change.type === "changed") {
+                        const pathParts = change.path.split('.');
+                        const baseElPath = pathParts[0];
+                        const targetEl = rootEl.querySelector(`[data-kv-path="${baseElPath}"]`) || 
+                                         (rootEl.getAttribute("data-kv-path") === baseElPath ? rootEl : null);
+                        
+                        if (targetEl) {
+                            if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
+                                targetEl.textContent = change.new;
+                            }
+                        }
+                    } else if (change.type === "replaced") {
+                        if (el) {
+                            const newHtml = renderNode(change.new, kRuntime, theme, change.path);
+                            const temp = document.createElement('div');
+                            temp.innerHTML = newHtml;
+                            el.replaceWith(temp.firstElementChild);
+                        }
+                    } else if (change.type === "added" || change.type === "removed") {
+                        // For add/remove in lists, we still trigger a re-render of the parent for safety
+                        // but we could optimize this later.
+                        const parentPath = change.path.substring(0, change.path.lastIndexOf('.children['));
+                        const parentEl = rootEl.querySelector(`[data-kv-path="${parentPath}"]`) || 
+                                         (rootEl.getAttribute("data-kv-path") === parentPath ? rootEl : null);
+                        if (parentEl) {
+                            // Find the parent node in the AST to re-render it
+                            // For now, let's just do a full refresh of the whole app if add/remove happens
+                            // because managing child indices in DOM is complex.
+                            throw new Error("Complex change: falling back to full render");
+                        }
+                    }
+                } catch (e) {
+                    // Fallback to full render if patching fails
+                    const html = render(rawAst, { runtime: kRuntime, theme });
+                    document.getElementById("root").innerHTML = html;
+                }
+            });
+        }
+
         // Global state updaters called by HTML event listeners
-        window.updateState = function(target, expr) {
-            kRuntime.setState(target, expr);
+        window.__klover_executeOperations = function(opsJson, scopeJson) {
+            try {
+                // The renderer escapes quotes in JSON.stringify
+                const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
+                const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
+                kRuntime.executeOperations(ops, scope);
+            } catch (err) {
+                console.error("Klover Ops Error:", err);
+            }
         };
 
-        window.updateOperations = function(ops) {
-            kRuntime.executeOperations(ops);
+        window.__klover_setState = function(target, expr) {
+            kRuntime.setState(target, expr);
         };
 
         // Bind update to render cycle

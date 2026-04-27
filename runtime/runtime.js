@@ -1,9 +1,14 @@
+// runtime/runtime.js - V8 with Diffing Support
 class Runtime {
     constructor(ast, components = {}) {
         this.ast = ast;
         this.components = components;
         this.state = {};
         this.onRender = null;
+
+        // V8: Track previous tree for diffing
+        this.previousTree = null;
+        this.currentTree = null;
     }
 
     // -------------------------
@@ -39,6 +44,16 @@ class Runtime {
         const values = Object.values(context);
 
         try {
+            // Handle chained operations (a & b & c)
+            if (typeof expr === 'string' && expr.includes('&')) {
+                const parts = expr.split('&');
+                let lastResult = null;
+                for (const part of parts) {
+                    const fn = new Function(...keys, "return " + part.trim());
+                    lastResult = fn(...values);
+                }
+                return lastResult;
+            }
             return new Function(...keys, "return " + expr.trim())(...values);
         } catch (e) {
             console.error("Evaluation Error:", e, "Expression:", expr);
@@ -60,21 +75,91 @@ class Runtime {
         }
 
         const newValue = this.evaluate(finalExpr);
-        this.state[actualTarget] = newValue;
+        if (newValue !== null && newValue !== undefined) {
+            this.state[actualTarget] = newValue;
+            console.log(`🔄 State updated: ${actualTarget} = ${newValue}`);
+        }
 
-        if (this.onRender) this.onRender(this.resolveTree());
+        // Trigger re-render with new tree
+        if (this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
     }
 
-    executeOperations(operations) {
+    executeOperations(operations, scope = {}) {
         if (!Array.isArray(operations)) return;
+        
+        let changed = false;
         operations.forEach(op => {
-            const newValue = this.evaluate(op.expression);
-            // Robust target extraction: op.target might still have spaces or operators if the parser was loose
-            const cleanTarget = op.target.trim();
-            this.state[cleanTarget] = newValue;
-            console.log(`Update: ${cleanTarget} =`, newValue);
+            const newValue = this.evaluate(op.expression, scope);
+            if (newValue !== null && newValue !== undefined) {
+                const cleanTarget = op.target.trim();
+                if (this.state[cleanTarget] !== newValue) {
+                    this.state[cleanTarget] = newValue;
+                    console.log(`🔄 Operation: ${cleanTarget} = ${newValue}`);
+                    changed = true;
+                }
+            }
         });
-        if (this.onRender) this.onRender(this.resolveTree());
+
+        if (changed && this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
+    }
+
+    // -------------------------
+    // V8: DIFF TWO TREES
+    // -------------------------
+    diffTree(oldTree, newTree, changes = [], path = "") {
+        if (!oldTree && !newTree) return changes;
+        if (!oldTree) {
+            changes.push({ type: "added", path, node: newTree });
+            return changes;
+        }
+        if (!newTree) {
+            changes.push({ type: "removed", path, node: oldTree });
+            return changes;
+        }
+
+        // Different types
+        if (oldTree.type !== newTree.type) {
+            changes.push({ type: "replaced", path, old: oldTree, new: newTree });
+            return changes;
+        }
+
+        // Text nodes - check value change
+        if (oldTree.type === "text" && oldTree.value !== newTree.value) {
+            changes.push({
+                type: "changed",
+                path: path ? `${path}.value` : "value",
+                old: oldTree.value,
+                new: newTree.value
+            });
+        }
+
+        // Button nodes - check label change
+        if (oldTree.type === "button" && oldTree.label !== newTree.label) {
+            changes.push({
+                type: "changed",
+                path: path ? `${path}.label` : "label",
+                old: oldTree.label,
+                new: newTree.label
+            });
+        }
+
+        // Recursively check children
+        const oldChildren = oldTree.children || [];
+        const newChildren = newTree.children || [];
+        const maxLen = Math.max(oldChildren.length, newChildren.length);
+
+        for (let i = 0; i < maxLen; i++) {
+            const newPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+            this.diffTree(oldChildren[i], newChildren[i], changes, newPath);
+        }
+
+        return changes;
     }
 
     // -------------------------
@@ -83,39 +168,66 @@ class Runtime {
     resolveNode(node, scope = {}) {
         if (!node) return null;
 
+        let resolved = null;
+
         // -------------------------
-        // COMPONENT
+        // STATE (Non-visual)
         // -------------------------
-        if (node.type === "component") {
+        if (node.type === "state") {
+            return null;
+        }
+        
+        else if (node.type === "component") {
             const comp = this.components[node.name];
             if (!comp || !comp.root) return null;
-            return this.resolveNode(comp.root, scope);
+
+            // Evaluate props in current scope
+            const resolvedProps = {};
+            if (node.props) {
+                for (const [key, expr] of Object.entries(node.props)) {
+                    const val = this.evaluate(String(expr), scope);
+                    resolvedProps[key] = val !== null ? val : expr;
+                }
+            }
+
+            // Merge resolved props with existing scope
+            const mergedScope = { ...scope, ...resolvedProps };
+            resolved = this.resolveNode(comp.root, mergedScope);
         }
 
         // -------------------------
         // TEXT (VARIABLE/EXPRESSION)
         // -------------------------
-        if (node.type === "text" && node.isVariable) {
+        else if (node.type === "text" && node.isVariable) {
             const value = this.evaluate(node.value, scope);
-
-            return {
+            resolved = {
                 ...node,
-                value: value !== null ? value : "",
+                value: value !== null && value !== undefined ? value : "",
                 isVariable: false
             };
         }
 
+        // -------------------------
+        // IMAGE & VIDEO
+        // -------------------------
+        else if ((node.type === "image" || node.type === "video") && node.isVariable) {
+            const value = this.evaluate(node.src, scope);
+            resolved = {
+                ...node,
+                src: value !== null && value !== undefined ? value : "",
+                isVariable: false
+            };
+        }
 
         // -------------------------
-        // IF
+        // IF CONDITIONAL
         // -------------------------
-        if (node.type === "if") {
+        else if (node.type === "if") {
             const result = this.evaluate(node.condition, scope);
-
             if (!result) return null;
 
-            return {
-                ...node,
+            resolved = {
+                type: "fragment",
                 children: node.children
                     .map(child => this.resolveNode(child, scope))
                     .filter(Boolean)
@@ -123,36 +235,36 @@ class Runtime {
         }
 
         // -------------------------
-        // REPEAT
+        // REPEAT LOOP
         // -------------------------
-        if (node.type === "repeat") {
+        else if (node.type === "repeat") {
             const list = this.state[node.source] || [];
-
             const expanded = [];
 
-            list.forEach(item => {
+            list.forEach((item, index) => {
                 const newScope = {
                     ...scope,
-                    [node.itemName]: item
+                    [node.itemName]: item,
+                    index: index
                 };
 
                 node.children.forEach(child => {
-                    const resolved = this.resolveNode(child, newScope);
-                    if (resolved) expanded.push(resolved);
+                    const resChild = this.resolveNode(child, newScope);
+                    if (resChild) expanded.push(resChild);
                 });
             });
 
-            return {
+            resolved = {
                 type: "fragment",
                 children: expanded
             };
         }
 
         // -------------------------
-        // GENERIC NODE
+        // GENERIC NODE (with children)
         // -------------------------
-        if (node.children) {
-            return {
+        else if (node.children) {
+            resolved = {
                 ...node,
                 children: node.children
                     .map(child => this.resolveNode(child, scope))
@@ -160,14 +272,93 @@ class Runtime {
             };
         }
 
-        return { ...node };
+        // -------------------------
+        // LEAF NODE (no children)
+        // -------------------------
+        else {
+            resolved = { ...node };
+        }
+
+        // BAKE SCOPE INTO NODES WITH EVENTS
+        if (resolved && node.events) {
+            resolved._scope = { ...scope };
+        }
+
+        return resolved;
     }
 
     // -------------------------
-    // ENTRY POINT
+    // V8: ENTRY POINT with tracking
     // -------------------------
     resolveTree() {
-        return this.resolveNode(this.ast);
+        // Store previous tree before resolving new one
+        const oldTree = this.currentTree;
+
+        // Resolve new tree
+        const newTree = this.resolveNode(this.ast);
+
+        // Store for next diff
+        this.previousTree = oldTree;
+        this.currentTree = newTree;
+
+        // Calculate diff if we have both trees
+        let changes = null;
+        if (this.previousTree && this.currentTree) {
+            changes = this.diffTree(this.previousTree, this.currentTree);
+            if (changes.length > 0) {
+                console.log(`📊 V8 Diff: ${changes.length} change(s) detected`);
+                changes.forEach(change => {
+                    console.log(`   - ${change.type}: ${change.path || ''}`,
+                        change.old !== undefined ? `"${change.old}" → "${change.new}"` : '');
+                });
+            }
+        }
+
+        // Attach changes to result for renderer optimization
+        if (changes && changes.length > 0) {
+            newTree._changes = changes;
+        }
+
+        return newTree;
+    }
+
+    // -------------------------
+    // HELPER: Get current state
+    // -------------------------
+    getState() {
+        return { ...this.state };
+    }
+
+    // -------------------------
+    // HELPER: Set multiple states at once
+    // -------------------------
+    setMultipleState(updates) {
+        let changed = false;
+        for (const [key, value] of Object.entries(updates)) {
+            if (this.state[key] !== value) {
+                this.state[key] = value;
+                changed = true;
+            }
+        }
+        if (changed && this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
+    }
+
+    // -------------------------
+    // HELPER: Reset all state
+    // -------------------------
+    resetState() {
+        const keys = Object.keys(this.state);
+        for (const key of keys) {
+            delete this.state[key];
+        }
+        this.extractState(this.ast);
+        if (this.onRender) {
+            const newTree = this.resolveTree();
+            this.onRender(newTree);
+        }
     }
 }
 

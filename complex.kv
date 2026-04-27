@@ -1,0 +1,43 @@
+state cart = []
+state products = [{"id":1, "name":"Quantum CPU", "price":999, "img":"https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400"}, {"id":2, "name":"Neural GPU", "price":1499, "img":"https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400"}]
+state viewCart = false
+
+component ProductCard:
+    column gap=12:
+        image product.img
+        column:
+            text product.name weight=bold size=xl
+            text product.price size=lg
+        button "Add to Cart" primary onClick=set(cart, [...cart, product])
+
+column gap=32:
+    row gap=64:
+        text "Futuristic Tech Store" size=4xl weight=bold
+        row gap=16:
+            button "Cart" onClick=set(viewCart, !viewCart)
+            text cart.length size=lg weight=bold
+    
+    if !viewCart:
+        row gap=32:
+            repeat products:
+                ProductCard product=item
+    
+    if viewCart:
+        column gap=24:
+            row:
+                text "Your Cart" size=3xl weight=bold
+                button "Back" onClick=set(viewCart, false)
+            
+            if cart.length === 0:
+                text "Your cart is lonely." size=lg
+            
+            column gap=12:
+                repeat cart:
+                    row gap=20:
+                        image item.img 
+                        column:
+                            text item.name weight=bold
+                            text item.price
+            
+            if cart.length > 0:
+                button "Checkout - Clear Cart" danger onClick=set(cart, []) & set(viewCart, false)

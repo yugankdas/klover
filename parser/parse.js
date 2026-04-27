@@ -218,28 +218,52 @@ function parse(input) {
         // IMAGE
         // -------------------------
         else if (trimmed.startsWith("image")) {
-            const match = trimmed.match(/"(.*?)"/);
+            const rest = trimmed.replace(/^image\s+/, "");
+            let src = "";
+            let after = "";
+            let isVariable = false;
 
-            if (match) {
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                node = createImage(match[1], extractProps(propParts));
+            if (rest.startsWith('"')) {
+                const match = rest.match(/"(.*?)"/);
+                if (match) {
+                    src = match[1];
+                    after = rest.slice(match.index + match[0].length).trim();
+                }
+            } else {
+                const parts = rest.split(/\s+/);
+                src = parts[0];
+                after = parts.slice(1).join(" ");
+                isVariable = true;
             }
+
+            const propParts = after.split(" ").filter(Boolean);
+            node = createImage(src, extractProps(propParts), isVariable);
         }
 
         // -------------------------
         // 🎬 VIDEO (NEW)
         // -------------------------
         else if (trimmed.startsWith("video")) {
-            const match = trimmed.match(/"(.*?)"/);
+            const rest = trimmed.replace(/^video\s+/, "");
+            let src = "";
+            let after = "";
+            let isVariable = false;
 
-            if (match) {
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                node = createVideo(match[1], extractProps(propParts));
+            if (rest.startsWith('"')) {
+                const match = rest.match(/"(.*?)"/);
+                if (match) {
+                    src = match[1];
+                    after = rest.slice(match.index + match[0].length).trim();
+                }
+            } else {
+                const parts = rest.split(/\s+/);
+                src = parts[0];
+                after = parts.slice(1).join(" ");
+                isVariable = true;
             }
+
+            const propParts = after.split(" ").filter(Boolean);
+            node = createVideo(src, extractProps(propParts), isVariable);
         }
 
         // -------------------------
@@ -278,7 +302,9 @@ function parse(input) {
         // COMPONENT USAGE
         // -------------------------
         else if (components[parts[0]]) {
-            node = createComponentNode(parts[0]);
+            const name = parts[0];
+            const propParts = parts.slice(1);
+            node = createComponentNode(name, extractProps(propParts));
         }
 
         if (!node) continue;
