@@ -1,53 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover V5 — Live App</title>
+    <title>Klover V7 App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#3b82f6',
+                            hover: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 40px; 
-            background: #f8f9fa; 
-            color: #333;
-            line-height: 1.6;
+            background-color: #f1f5f9; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
         }
-        #app { 
-            max-width: 600px; 
-            margin: 0 auto; 
+        .klover-app { 
             background: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 1.5rem; 
+            padding: 3rem; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            min-width: 400px;
+            max-width: 90%;
         }
-        h1, h2 { color: #2c3e50; }
-        p { margin: 8px 0; }
-        button {
-            padding: 10px 20px;
-            font-size: 15px;
-            cursor: pointer;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            transition: all 0.2s;
-            margin: 5px;
+        /* Default spacing for nodes */
+        p { margin-bottom: 0.5rem; }
+        button { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
         }
-        button:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
-        }
-        button:active {
-            transform: translateY(0);
-        }
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
-    <div id="app"></div>
+    <div id="root">
+        <div class="klover-app"><div style="display:flex; flex-direction:column; align-items:center"><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 20px"><p class="text-xl font-bold">Klover Premium Store</p></div><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 40px"><div style="display:flex; flex-direction:column; align-items:center"><p class="text-sm font-medium">Balance</p><p class="text-2xl font-bold">1000</p></div><div style="display:flex; flex-direction:column; align-items:center"><p class="text-sm font-medium">Cart Items</p><p class="text-2xl font-bold">0</p></div></div><div style="display:flex; flex-direction:row; align-items:center; flex-wrap:wrap; gap: 30px"><div style="display:flex; flex-direction:column; align-items:center; gap: 12px"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" /><p class="text-lg font-bold">Premium Sneakers</p><p class="text-sm">Price: $150</p><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count + 1&quot;},{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance - 150&quot;}])">Add to Cart</button></div><div style="display:flex; flex-direction:column; align-items:center; gap: 12px"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff" /><p class="text-lg font-bold">Premium Sneakers</p><p class="text-sm">Price: $150</p><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count + 1&quot;},{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance - 150&quot;}])">Add to Cart</button></div></div><div style="display:flex; flex-direction:column; align-items:center; gap: 10px"><p class="text-base font-semibold">See them in action</p><video src="https://www.w3schools.com/html/mov_bbb.mp4" controls></video></div><button class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200" onclick="window.updateOperations([{&quot;target&quot;:&quot;balance&quot;,&quot;expression&quot;:&quot;balance = 1000&quot;},{&quot;target&quot;:&quot;cart_count&quot;,&quot;expression&quot;:&quot;cart_count = 0&quot;}])">Reset Shop</button></div></div>
+    </div>
 
+    
     <script>
-        // --- EMBEDDED RUNTIME ---
-        class Runtime {
-    constructor(ast) {
+        try {
+            // --- EMBEDDED SCRIPTS ---
+            
+            // 1. Runtime
+            class Runtime {
+    constructor(ast, components = {}) {
         this.ast = ast;
+        this.components = components;
         this.state = {};
         this.onRender = null;
     }
@@ -69,6 +84,11 @@
         if (node.children) {
             node.children.forEach(child => this.extractState(child));
         }
+
+        // Also extract from components
+        if (node.type === "component" && this.components[node.name]) {
+            this.extractState(this.components[node.name].root);
+        }
     }
 
     // -------------------------
@@ -76,20 +96,11 @@
     // -------------------------
     evaluate(expr, scope = {}) {
         const context = { ...this.state, ...scope };
-
         const keys = Object.keys(context);
         const values = Object.values(context);
 
         try {
-            // Clean up common DSL artifacts like trailing commas or multiple set calls 
-            // though the parser should have handled most.
-            let cleanExpr = expr.trim();
-            
-            // If it's a comma-separated operation list (e.g., "count, count + 1"), 
-            // Javascript's comma operator will work, but we should make sure it doesn't 
-            // break if we expect a single value.
-            
-            return new Function(...keys, "return " + cleanExpr)(...values);
+            return new Function(...keys, "return " + expr.trim())(...values);
         } catch (e) {
             console.error("Evaluation Error:", e, "Expression:", expr);
             return null;
@@ -111,37 +122,20 @@
 
         const newValue = this.evaluate(finalExpr);
         this.state[actualTarget] = newValue;
-        
-        console.log(`State Update: ${actualTarget} =`, newValue);
 
-        // Notify render
-        if (this.onRender) {
-            this.onRender(this.resolveTree());
-        }
+        if (this.onRender) this.onRender(this.resolveTree());
     }
 
     executeOperations(operations) {
         if (!Array.isArray(operations)) return;
-
         operations.forEach(op => {
-            const { target, expression } = op;
-            let finalExpr = expression;
-            let actualTarget = target;
-
-            if (expression.includes("=")) {
-                const parts = expression.split("=");
-                actualTarget = parts[0].trim();
-                finalExpr = parts[1].trim();
-            }
-
-            const newValue = this.evaluate(finalExpr);
-            this.state[actualTarget] = newValue;
-            console.log(`Op Update: ${actualTarget} =`, newValue);
+            const newValue = this.evaluate(op.expression);
+            // Robust target extraction: op.target might still have spaces or operators if the parser was loose
+            const cleanTarget = op.target.trim();
+            this.state[cleanTarget] = newValue;
+            console.log(`Update: ${cleanTarget} =`, newValue);
         });
-
-        if (this.onRender) {
-            this.onRender(this.resolveTree());
-        }
+        if (this.onRender) this.onRender(this.resolveTree());
     }
 
     // -------------------------
@@ -151,20 +145,27 @@
         if (!node) return null;
 
         // -------------------------
-        // TEXT (VARIABLE)
+        // COMPONENT
+        // -------------------------
+        if (node.type === "component") {
+            const comp = this.components[node.name];
+            if (!comp || !comp.root) return null;
+            return this.resolveNode(comp.root, scope);
+        }
+
+        // -------------------------
+        // TEXT (VARIABLE/EXPRESSION)
         // -------------------------
         if (node.type === "text" && node.isVariable) {
-            const value =
-                scope[node.value] !== undefined
-                    ? scope[node.value]
-                    : this.state[node.value];
+            const value = this.evaluate(node.value, scope);
 
             return {
                 ...node,
-                value,
+                value: value !== null ? value : "",
                 isVariable: false
             };
         }
+
 
         // -------------------------
         // IF
@@ -231,1018 +232,209 @@
     }
 }
 
-if (typeof module !== "undefined") {
-    module.exports = Runtime;
+
+            window.Runtime = Runtime;
+
+            // 2. Renderer
+            // renderer/render.js - V7 String Renderer (FIXED)
+function escapeHtml(str) {
+    // FIX: Handle undefined/null
+    if (str === undefined || str === null) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }
 
-        // --- EMBEDDED RENDERER ---
-        // renderer/render.js - V6 Complete
-// Bhumi: This is the ONLY file you need to edit
+function applyProps(node, theme = {}) {
+    let classes = [];
+    let styleRules = [];
 
-// Style mapping based on props
-function applyProps(element, props, theme = {}) {
-    if (!props) return;
+    if (!node || !node.props) return { class: "", style: "" };
+
+    const props = node.props;
 
     // Size mapping
     const sizeMap = {
-        xs: "12px",
-        sm: "14px",
-        md: "16px",
-        lg: "20px",
-        xl: "24px",
-        "2xl": "32px"
+        xs: "text-xs", sm: "text-sm", md: "text-base",
+        lg: "text-lg", xl: "text-xl", "2xl": "text-2xl",
+        "3xl": "text-3xl", "4xl": "text-4xl"
     };
 
-    // Weight mapping
     const weightMap = {
-        normal: "400",
-        medium: "500",
-        semibold: "600",
-        bold: "700"
+        normal: "font-normal", medium: "font-medium",
+        semibold: "font-semibold", bold: "font-bold", extrabold: "font-extrabold"
     };
 
-    // Apply font size
-    if (props.size) {
-        element.style.fontSize = sizeMap[props.size] || props.size;
-    }
+    if (props.size && sizeMap[props.size]) classes.push(sizeMap[props.size]);
+    if (props.weight && weightMap[props.weight]) classes.push(weightMap[props.weight]);
 
-    // Apply font weight
-    if (props.weight) {
-        element.style.fontWeight = weightMap[props.weight] || props.weight;
-    }
-
-    // Apply font family
-    if (props.font) {
-        element.style.fontFamily = props.font;
-    } else if (theme.font) {
-        element.style.fontFamily = theme.font;
-    }
-
-    // Apply colors
     if (props.primary) {
-        element.style.backgroundColor = theme.primary || "#007bff";
-        element.style.color = "white";
-        element.style.border = "none";
-        element.style.padding = "10px 20px";
-        element.style.borderRadius = "6px";
-        element.style.cursor = "pointer";
+        classes.push("bg-primary", "text-white");
+        classes.push("px-4", "py-2", "rounded-lg", "cursor-pointer");
     }
 
-    // Apply gap for flex containers
     if (props.gap !== undefined) {
-        element.style.gap = typeof props.gap === "number" ? `${props.gap}px` : props.gap;
+        styleRules.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
     }
 
-    // Apply custom styles
-    if (props.style) {
-        Object.assign(element.style, props.style);
-    }
+    return {
+        class: classes.length ? ` class="${classes.join(' ')}"` : "",
+        styleRules: styleRules
+    };
 }
 
 function renderNode(node, runtime, theme = {}) {
-    if (!node) return document.createTextNode("");
+    if (!node) return "";
 
-    // TEXT node
+    // TEXT
     if (node.type === "text") {
-        const el = document.createElement("p");
-        el.innerText = node.value || "";
-        applyProps(el, node.props, theme);
-        return el;
+        const attrs = applyProps(node, theme);
+        let value = node.value;
+        if (value === undefined || value === null) value = "";
+        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
+        return `<p${attrs.class}${styleAttr}>${escapeHtml(value)}</p>`;
     }
 
-    // BUTTON node
+    // BUTTON
     if (node.type === "button") {
-        const el = document.createElement("button");
-        el.innerText = node.label || "Button";
-        applyProps(el, node.props, theme);
+        const attrs = applyProps(node, theme);
+        const label = node.label || "Button";
+        let onclick = "";
 
+        // Default classes for a polished look if not primary
+        const classes = attrs.class || ' class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200"';
+        
         if (node.events?.click) {
-            el.addEventListener("click", () => {
-                if (node.events.click.operations) {
-                    runtime.executeOperations(node.events.click.operations);
-                } else {
-                    runtime.setState(
-                        node.events.click.target,
-                        node.events.click.expression
-                    );
-                }
-            });
+
+            const click = node.events.click;
+            
+            if (click.operations) {
+                // Multi-operation (V6+)
+                const opsJson = JSON.stringify(click.operations).replace(/"/g, "&quot;");
+                onclick = ` onclick="window.updateOperations(${opsJson})"`;
+            } else if (click.target && click.expression) {
+                // Simple operation
+                onclick = ` onclick="window.updateState('${escapeHtml(click.target)}', '${escapeHtml(click.expression).replace(/'/g, "\\'")}')"`;
+            }
         }
-        return el;
+        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
+        return `<button${classes}${styleAttr}${onclick}>${escapeHtml(label)}</button>`;
     }
 
-    // VIDEO node (NEW in V6)
+
+
+    // VIDEO
     if (node.type === "video") {
-        const el = document.createElement("video");
-        el.src = node.src;
-        el.style.maxWidth = "100%";
-        el.style.borderRadius = "8px";
-
-        // Apply video-specific props
-        if (node.props) {
-            if (node.props.controls) el.controls = true;
-            if (node.props.autoplay) el.autoplay = true;
-            if (node.props.loop) el.loop = true;
-            if (node.props.muted) el.muted = true;
-            if (node.props.width) el.width = node.props.width;
-            if (node.props.height) el.height = node.props.height;
-        }
-
-        applyProps(el, node.props, theme);
-        return el;
+        const attrs = applyProps(node, theme);
+        const src = node.src || "";
+        let videoAttrs = ` src="${escapeHtml(src)}"`;
+        if (node.props?.controls) videoAttrs += " controls";
+        if (node.props?.autoplay) videoAttrs += " autoplay";
+        if (node.props?.loop) videoAttrs += " loop";
+        if (node.props?.muted) videoAttrs += " muted";
+        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
+        return `<video${videoAttrs}${attrs.class}${styleAttr}></video>`;
     }
 
-    // IMAGE node
+    // IMAGE
     if (node.type === "image") {
-        const el = document.createElement("img");
-        el.src = node.src;
-        el.style.maxWidth = "100%";
-        el.style.borderRadius = "8px";
-        applyProps(el, node.props, theme);
-        return el;
+        const attrs = applyProps(node, theme);
+        const src = node.src || "";
+        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
+        return `<img src="${escapeHtml(src)}"${attrs.class}${styleAttr} />`;
     }
 
-    // COLUMN node
+    // COLUMN
     if (node.type === "column") {
-        const el = document.createElement("div");
-        el.style.display = "flex";
-        el.style.flexDirection = "column";
-        el.style.alignItems = "center";
-        el.style.justifyContent = "center";
-
-        // Default styles
-        el.style.padding = "20px";
-        el.style.backgroundColor = theme.background || "#f5f5f5";
-        el.style.borderRadius = "12px";
-
-        applyProps(el, node.props, theme);
-
-        if (node.children) {
-            node.children.forEach(child => {
-                const rendered = renderNode(child, runtime, theme);
-                if (rendered) el.appendChild(rendered);
-            });
+        const attrs = applyProps(node, theme);
+        let children = "";
+        if (node.children && Array.isArray(node.children)) {
+            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
         }
-        return el;
+        const styles = ["display:flex", "flex-direction:column", "align-items:center", ...attrs.styleRules];
+        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
     }
 
-    // ROW node
+    // ROW
     if (node.type === "row") {
-        const el = document.createElement("div");
-        el.style.display = "flex";
-        el.style.flexDirection = "row";
-        el.style.alignItems = "center";
-        el.style.justifyContent = "center";
-        el.style.flexWrap = "wrap";
-        applyProps(el, node.props, theme);
-
-        if (node.children) {
-            node.children.forEach(child => {
-                const rendered = renderNode(child, runtime, theme);
-                if (rendered) el.appendChild(rendered);
-            });
+        const attrs = applyProps(node, theme);
+        let children = "";
+        if (node.children && Array.isArray(node.children)) {
+            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
         }
-        return el;
+        const styles = ["display:flex", "flex-direction:row", "align-items:center", "flex-wrap:wrap", ...attrs.styleRules];
+        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
     }
 
-    // FRAGMENT node
+    // FRAGMENT
     if (node.type === "fragment") {
-        const fragment = document.createDocumentFragment();
-        if (node.children) {
-            node.children.forEach(child => {
-                const rendered = renderNode(child, runtime, theme);
-                if (rendered) fragment.appendChild(rendered);
-            });
+        if (node.children && Array.isArray(node.children)) {
+            return node.children.map(c => renderNode(c, runtime, theme)).join("");
         }
-        return fragment;
+        return "";
     }
 
-    return document.createTextNode("");
-}
-
-function renderApp(tree, runtime, theme = {}) {
-    const root = document.getElementById("app");
-    if (!root) {
-        console.error("❌ No element with id='app' found!");
-        return;
-    }
-
-    root.innerHTML = "";
-    const rendered = renderNode(tree, runtime, theme);
-    if (rendered) root.appendChild(rendered);
+    return "";
 }
 
 function render(tree, options = {}) {
     const { runtime, theme = {} } = options;
-    if (!runtime) {
-        console.error("❌ No runtime provided!");
-        return;
-    }
-    renderApp(tree, runtime, theme);
+    if (!runtime) return "<div>Error: No runtime</div>";
+
+    const resolved = runtime.resolveTree ? runtime.resolveTree() : tree;
+    const html = renderNode(resolved, runtime, theme);
+    return `<div class="klover-app">${html || ""}</div>`;
 }
 
-if (typeof module !== "undefined") {
-    module.exports = { render, renderApp, renderNode };
-}
 
-        // --- BOOTSTRAP ---
-        const ast = {
-  "type": "column",
-  "align": "start",
-  "children": [
-    {
-      "type": "state",
-      "key": "count",
-      "value": 0
-    },
-    {
-      "type": "state",
-      "key": "score",
-      "value": 100
-    },
-    {
-      "type": "state",
-      "key": "player",
-      "value": "Hero"
-    },
-    {
-      "type": "state",
-      "key": "volume",
-      "value": 50
-    },
-    {
-      "type": "column",
-      "align": "gap=24",
-      "children": [
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "🎮 KLOVER V6 ULTIMATE TEST",
-          "isVariable": false,
-          "props": {
-            "size": "xl",
-            "weight": "bold"
-          }
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "🎬 VIDEO PLAYER",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "video",
-          "src": "https://www.w3schools.com/html/mov_bbb.mp4",
-          "props": {
-            "controls": true,
-            "autoplay": true,
-            "muted": true
-          }
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "👤 PLAYER STATS",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "column",
-              "align": "gap=8",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Name:",
-                  "isVariable": false,
-                  "props": {
-                    "size": "sm",
-                    "weight": "medium"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "player",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            },
-            {
-              "type": "column",
-              "align": "gap=8",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Score:",
-                  "isVariable": false,
-                  "props": {
-                    "size": "sm",
-                    "weight": "medium"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "score",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold",
-                    "primary": true
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            },
-            {
-              "type": "column",
-              "align": "gap=8",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Volume:",
-                  "isVariable": false,
-                  "props": {
-                    "size": "sm",
-                    "weight": "medium"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "volume",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "🎯 COUNTER DEMO",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "-10",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count - 10"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "-1",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count - 1"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "text",
-              "value": "count",
-              "isVariable": true,
-              "props": {
-                "size": "2xl",
-                "weight": "bold",
-                "primary": true
-              }
-            },
-            {
-              "type": "button",
-              "label": "+1",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count + 1"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "+10",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count + 10"
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "Reset",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, 0"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Set 100",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, 100"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Double",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count * 2"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Half",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, count / 2"
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "⚡ LIVE CALCULATIONS",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "column",
-          "align": "gap=8",
-          "children": [
-            {
-              "type": "row",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "count² =",
-                  "isVariable": false,
-                  "props": {
-                    "size": "md"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "count * count",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            },
-            {
-              "type": "row",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "count × 3 =",
-                  "isVariable": false,
-                  "props": {
-                    "size": "md"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "count * 3",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            },
-            {
-              "type": "row",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "count mod 5 =",
-                  "isVariable": false,
-                  "props": {
-                    "size": "md"
-                  }
-                },
-                {
-                  "type": "text",
-                  "value": "count % 5",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "🎮 SCORE CONTROLS",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "+10 Score",
-              "props": {
-                "primary": true
-              },
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "score",
-                      "expression": "score, score + 10"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "+50 Score",
-              "props": {
-                "primary": true
-              },
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "score",
-                      "expression": "score, score + 50"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Reset Score",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "score",
-                      "expression": "score, 100"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Double Score",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "score",
-                      "expression": "score, score * 2"
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "text",
-              "value": "Total:",
-              "isVariable": false,
-              "props": {}
-            },
-            {
-              "type": "text",
-              "value": "count + score",
-              "isVariable": true,
-              "props": {
-                "size": "lg",
-                "weight": "bold",
-                "primary": true
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "🎨 STYLED BUTTON VARIANTS",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "Primary",
-              "props": {
-                "primary": true
-              },
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "player",
-                      "expression": "player, \"Primary\""
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Success",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "player",
-                      "expression": "player, \"Success\""
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Warning",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "player",
-                      "expression": "player, \"Warning\""
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "Danger",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "player",
-                      "expression": "player, \"Danger\""
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "text",
-          "value": "📊 STATUS",
-          "isVariable": false,
-          "props": {
-            "size": "lg",
-            "weight": "semibold"
-          }
-        },
-        {
-          "type": "column",
-          "align": "gap=8",
-          "children": [
-            {
-              "type": "text",
-              "value": "count > 50 ? \"🔴 CRITICAL: Count exceeds 50!\" : count > 20 ? \"🟡 WARNING: Count above 20\" : count < 0 ? \"🔵 NEGATIVE: Count below zero\" : \"🟢 NORMAL: All good\"",
-              "isVariable": true,
-              "props": {}
-            },
-            {
-              "type": "row",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Player:",
-                  "isVariable": false,
-                  "props": {}
-                },
-                {
-                  "type": "text",
-                  "value": "player",
-                  "isVariable": true,
-                  "props": {
-                    "size": "lg",
-                    "weight": "bold"
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            },
-            {
-              "type": "row",
-              "children": [
-                {
-                  "type": "text",
-                  "value": "Game Total:",
-                  "isVariable": false,
-                  "props": {}
-                },
-                {
-                  "type": "text",
-                  "value": "count + score",
-                  "isVariable": true,
-                  "props": {
-                    "size": "xl",
-                    "weight": "bold",
-                    "primary": true
-                  }
-                }
-              ],
-              "props": {},
-              "responsive": null
-            }
-          ],
-          "props": {},
-          "responsive": null
-        },
-        {
-          "type": "text",
-          "value": "━━━━━━━━━━━━━━━━━━━━━━",
-          "isVariable": false,
-          "props": {
-            "size": "md"
-          }
-        },
-        {
-          "type": "row",
-          "children": [
-            {
-              "type": "button",
-              "label": "RESET ALL",
-              "props": {
-                "primary": true
-              },
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, 0"
-                    },
-                    {
-                      "target": "score",
-                      "expression": "score, 100"
-                    },
-                    {
-                      "target": "player",
-                      "expression": "player, \"Hero\""
-                    },
-                    {
-                      "target": "volume",
-                      "expression": "volume, 50"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "type": "button",
-              "label": "MAX OUT",
-              "props": {},
-              "events": {
-                "click": {
-                  "operations": [
-                    {
-                      "target": "count",
-                      "expression": "count, 999"
-                    },
-                    {
-                      "target": "score",
-                      "expression": "score, 999"
-                    },
-                    {
-                      "target": "player",
-                      "expression": "player, \"MAX\""
-                    }
-                  ]
-                }
-              }
-            }
-          ],
-          "props": {},
-          "responsive": null
-        }
-      ],
-      "props": {},
-      "responsive": null
-    }
-  ],
-  "props": {},
-  "responsive": null
-};
+            window.render = render;
+            window.renderNode = renderNode;
+
+            // --- BOOTSTRAP ---
+
+
+        let state = {"balance":1000,"cart_count":0,"is_member":true,"shop_name":"Klover Premium Store"};
+        const rawAst = {"type":"column","align":"start","children":[{"type":"state","key":"balance","value":1000},{"type":"state","key":"cart_count","value":0},{"type":"state","key":"is_member","value":true},{"type":"state","key":"shop_name","value":"Klover Premium Store"},{"type":"row","children":[{"type":"text","value":"shop_name","isVariable":true,"props":{"size":"xl","weight":"bold"}},{"type":"if","condition":"is_member","children":[{"type":"text","value":"GOLD MEMBER","isVariable":false,"props":{"primary":true,"size":"xs","weight":"bold"}}]}],"props":{"gap":20}},{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"Balance","isVariable":false,"props":{"size":"sm","weight":"medium"}},{"type":"text","value":"balance","isVariable":true,"props":{"size":"2xl","weight":"bold"}}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"Cart Items","isVariable":false,"props":{"size":"sm","weight":"medium"}},{"type":"text","value":"cart_count","isVariable":true,"props":{"size":"2xl","weight":"bold"}}],"props":{}}],"props":{"gap":40}},{"type":"row","children":[{"type":"component","name":"Product"},{"type":"component","name":"Product"}],"props":{"gap":30}},{"type":"column","align":"start","children":[{"type":"text","value":"See them in action","isVariable":false,"props":{"size":"md","weight":"semibold"}},{"type":"video","src":"https://www.w3schools.com/html/mov_bbb.mp4","props":{"controls":true,"width":400}}],"props":{"gap":10}},{"type":"button","label":"Reset Shop","props":{},"events":{"click":{"operations":[{"target":"balance","expression":"balance = 1000"},{"target":"cart_count","expression":"cart_count = 0"}]}}}],"props":{}};
         const theme = {};
-        
-        console.log("Initializing Klover Runtime...");
-        const runtime = new Runtime(ast);
-        runtime.init();
+        const components = {"Product":{"root":{"type":"column","align":"start","children":[{"type":"image","src":"https://images.unsplash.com/photo-1542291026-7eec264c27ff","props":{}},{"type":"text","value":"Premium Sneakers","isVariable":false,"props":{"size":"lg","weight":"bold"}},{"type":"text","value":"Price: $150","isVariable":false,"props":{"size":"sm"}},{"type":"button","label":"Add to Cart","props":{},"events":{"click":{"operations":[{"target":"cart_count","expression":"cart_count + 1"},{"target":"balance","expression":"balance - 150"}]}}}],"props":{"gap":12}}}};
 
-        // Connect Runtime to Renderer
-        runtime.onRender = (resolvedTree) => {
-            console.log("Re-rendering...");
-            renderApp(resolvedTree, runtime, theme);
+        // Initialize client-side runtime
+        const kRuntime = new Runtime(rawAst, components);
+        kRuntime.state = state;
+
+        // Shared render function
+        function refresh() {
+            try {
+                const root = document.getElementById("root");
+                const html = render(rawAst, { runtime: kRuntime, theme });
+                root.innerHTML = html;
+                console.log("UI Refreshed. State:", kRuntime.state);
+            } catch (err) {
+                console.error("Refresh Error:", err);
+            }
+        }
+
+        // Global state updaters called by HTML event listeners
+        window.updateState = function(target, expr) {
+            kRuntime.setState(target, expr);
         };
 
-        // Initial Render
-        const initialResolvedTree = runtime.resolveTree();
-        renderApp(initialResolvedTree, runtime, theme);
-        
-        console.log("✅ Klover App Ready!");
+        window.updateOperations = function(ops) {
+            kRuntime.executeOperations(ops);
+        };
+
+        // Bind update to render cycle
+        kRuntime.onRender = refresh;
+
+        console.log("Klover V7 Live");
+    } catch (bootstrapErr) {
+        console.error("Klover V7 Bootstrap Error:", bootstrapErr);
+    }
     </script>
+
+
 </body>
 </html>

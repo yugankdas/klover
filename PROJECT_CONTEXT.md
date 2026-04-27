@@ -1,73 +1,65 @@
-# Klover Project Context (V7)
+# Klover Project Context (V7: The DX Update)
 
-Klover is a high-performance, state-aware Domain-Specific Language (DSL) and compiler designed for building complex, interactive UI systems with a rigorous separation of concerns.
+Klover is a state-aware UI system that prioritizes Developer Experience (DX) through robust tooling and a decoupled, modular architecture.
 
-## Core Objective
-To establish a production-grade pipeline that transforms declarative KV syntax into a semantic, machine-readable Abstract Syntax Tree (AST), managed by a dedicated logic runtime.
+## 1. V7: Developer Experience (DX) Features
 
-## V7 Professional Architecture (Latest)
+### The Klover CLI
+The project now includes a centralized Command Line Interface located in `./cli/index.js`.
+- **`klover build`**: Executes a one-time build of `input.kv` to `output.html`.
+- **`klover dev [file]`**: Enables **Watch Mode**. Uses `chokidar` to monitor file changes and automatically re-compiles the project.
+- **`klover run <file>`**: Compiles a specific `.kv` file.
+- **`klover debug`**: Compiles with internal logging enabled for troubleshooting.
 
-### 1. The Language Specification (`input.kv`)
-The DSL implements an indentation-based hierarchy:
-- **State Definitions**: `state [identifier] = [literal]`
-- **Reactive Nodes**: `text [expression]` (Supports complex math and ternary logic).
-- **Interactive Nodes**: `button "[label]" onClick=set([op1]) & set([op2])` (Supports batch operations).
-- **Layout Logic**: `column [alignment]` and `row` for structural composition.
-- **Visual Nodes**: `image "[url]"` and `video "[url]"` with hardware-accelerated playback props.
+### The Build Engine (`index.js`)
+The core pipeline has been refactored from a standalone script into a reusable **Build Engine**:
+- **Exported API**: Exports a `build(inputFile, outputFile)` function for programmatic use.
+- **Error Resilience**: Implements refined `try/catch` blocks to provide user-friendly error messages in the console, replacing raw stack traces.
 
-### 2. The Semantic Parser (`parser/parse.js`)
-A deterministic state-machine with refined expression awareness:
-- **Expression Extraction**: Uses a prefix-based logic to distinguish between node content and properties, allowing for spaces in math (e.g., `count * 5`).
-- **Whitelisted Properties**: Prop extraction is now guarded by a whitelist to prevent expression tokens from being misidentified as flags.
-- **Batch Event Serialization**: Multiple `set()` calls are serialized into an `operations` array:
-  ```js
-  events: { 
-    click: { 
-      operations: [
-        { target: "count", expression: "count + 1" },
-        { target: "score", expression: "score + 10" }
-      ]
-    } 
-  }
-  ```
+## 2. Language Specification (DSL)
 
-### 3. The Logic Runtime (`runtime/runtime.js`)
-A standalone class serving as the "source of truth":
-- **Expression Engine**: Uses a dynamic function constructor for safe, context-aware evaluation of DSL math/logic.
-- **Batch State Updates**: Implements `executeOperations()` to process multiple state changes in a single atomic cycle, reducing re-render overhead.
-- **State Discovery**: Recursively inventories all `state` nodes during initialization.
+### Component Lifecycle
+- **Definition**: `component [Name]:` defines a template.
+- **Initialization**: The parser stores these in a `components` registry.
+- **Handover**: The registry is passed directly to the renderer to be instantiated.
 
-### 4. The Presentation Layer (`renderer/render.js`)
-- **Abstracted Styles**: Uses a mapping system (`sizeMap`, `weightMap`) to translate DSL tokens into valid CSS.
-- **Dynamic Mounting**: Automatically clears and re-populates the `#app` container based on runtime state changes.
-- **Theme Persistence**: Styles are driven by a global `theme` object passed through the pipeline.
+### Event & Operation Logic
+- **Chained Operations**: Supports `onClick=set(a, 1) & set(b, 2)`.
+- **Dynamic Resolution**: Expressions are resolved at runtime in the browser (or target environment) using the logic state extracted during the parse phase.
 
-### 5. Pipeline Orchestration (`index.js`)
-- **Bundling**: Aggregates the runtime, renderer, and generated AST into a single `output.html`.
-- **Environment Agnostic**: Code includes safety wrappers for `module.exports`, making it compatible with both Node.js (build-time) and modern Browsers (run-time).
+## 3. Architecture Specification (V7)
 
-## File Hierarchy
+### Layer 1: The Parser (`parser/parse.js`)
+- **Indentation-First**: Stack-based hierarchy management.
+- **Feature Rich**: Supports `repeat`, `if`, `video`, and advanced prop extraction.
+
+### Layer 2: The Runtime (`runtime/runtime.js`)
+- **Logical Source of Truth**: Manages state and variable resolution.
+- **Scoped Execution**: Handles global and item-level scopes (for `repeat` loops).
+
+### Layer 3: The Renderer (`renderer/render.js`)
+- **Pure Presentation**: A decoupled module (Teammate Managed) that renders the pre-resolved tree.
+
+## 4. File Hierarchy (V7)
 
 ```text
 klover/
+├── cli/
+│   └── index.js          # Unified Command Line Interface
 ├── parser/
-│   └── parse.js          # DSL Parser with refined expression logic
+│   └── parse.js          # DSL Parser & AST Generator
 ├── runtime/
-│   └── runtime.js        # Logic Engine (Supports batch operations)
+│   └── runtime.js        # Logic Engine & State Manager
 ├── renderer/
-│   └── render.js         # Presentation Layer (Theme aware)
+│   └── render.js         # (Teammate Managed) Resolved Tree Renderer
 ├── shared/
-│   └── schema.js         # Unified AST Schema
-├── index.js              # Production Pipeline Orchestrator
+│   └── schema.js         # Unified AST Factory Layer
+├── index.js              # Reusable Build Engine
 ├── input.kv              # Primary DSL Source
-├── output.html           # Generated Live Application
-├── debug.json            # Parsed AST (Internal inspection)
-└── PROJECT_CONTEXT.md    # Detailed Technical Specification (V7)
+└── package.json          # Project Registry (v1.0.0 with CLI linked)
 ```
 
-## V7 Status
-- [x] **Math Maturity**: Full support for complex expressions in text nodes.
-- [x] **Batch Interactions**: "RESET ALL" and other multi-state buttons are fully functional.
-- [x] **Prop Integrity**: Whitelist-based parsing prevents prop/expression collisions.
-- [x] **Cross-Platform**: Script bundled files now execute correctly in browsers without ReferenceErrors.
-- [x] **Theme Persistence**: Style context is maintained throughout the reactive lifecycle.
+## 5. Design Philosophy
+- **Developer First**: Tools like `dev` mode reduce the feedback loop between code and visual results.
+- **Minimalist Core**: Zero external dependencies in the compiler (except `chokidar` for the CLI).
+- **Extensible AST**: The V7 schema is robust enough to support advanced features like nested components and complex animations.

@@ -1,99 +1,40 @@
-state count = 0
-state score = 100
-state player = "Hero"
-state volume = 50
+state balance = 1000
+state cart_count = 0
+state is_member = true
+state shop_name = "Klover Premium Store"
 
-column gap=24:
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    text "🎮 KLOVER V6 ULTIMATE TEST" size=xl weight=bold
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "🎬 VIDEO PLAYER" size=lg weight=semibold
-    video "https://www.w3schools.com/html/mov_bbb.mp4" controls autoplay muted
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "👤 PLAYER STATS" size=lg weight=semibold
-    row gap=32:
-        column gap=8:
-            text "Name:" size=sm weight=medium
-            text player size=lg weight=bold
-        column gap=8:
-            text "Score:" size=sm weight=medium
-            text score size=lg weight=bold primary
-        
-        column gap=8:
-            text "Volume:" size=sm weight=medium
-            text volume size=lg weight=bold
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "🎯 COUNTER DEMO" size=lg weight=semibold
-    row gap=16:
-        button "-10" onClick=set(count, count - 10)
-        button "-1" onClick=set(count, count - 1)
-        text count size=2xl weight=bold primary
-        button "+1" onClick=set(count, count + 1)
-        button "+10" onClick=set(count, count + 10)
-    
-    row gap=16:
-        button "Reset" onClick=set(count, 0)
-        button "Set 100" onClick=set(count, 100)
-        button "Double" onClick=set(count, count * 2)
-        button "Half" onClick=set(count, count / 2)
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "⚡ LIVE CALCULATIONS" size=lg weight=semibold
-    column gap=8:
-        row gap=16:
-            text "count² =" size=md
-            text count * count size=lg weight=bold
-        row gap=16:
-            text "count × 3 =" size=md
-            text count * 3 size=lg weight=bold
-        row gap=16:
-            text "count mod 5 =" size=md
-            text count % 5 size=lg weight=bold
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "🎮 SCORE CONTROLS" size=lg weight=semibold
-    row gap=16:
-        button "+10 Score" primary onClick=set(score, score + 10)
-        button "+50 Score" primary onClick=set(score, score + 50)
-        button "Reset Score" onClick=set(score, 100)
-        button "Double Score" onClick=set(score, score * 2)
-    
-    row gap=16:
-        text "Total:"
-        text count + score size=lg weight=bold primary
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "🎨 STYLED BUTTON VARIANTS" size=lg weight=semibold
-    row gap=16:
-        button "Primary" primary onClick=set(player, "Primary")
-        button "Success" onClick=set(player, "Success")
-        button "Warning" onClick=set(player, "Warning")
-        button "Danger" onClick=set(player, "Danger")
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    text "📊 STATUS" size=lg weight=semibold
-    column gap=8:
-        text count > 50 ? "🔴 CRITICAL: Count exceeds 50!" : count > 20 ? "🟡 WARNING: Count above 20" : count < 0 ? "🔵 NEGATIVE: Count below zero" : "🟢 NORMAL: All good"
-        
-        row gap=16:
-            text "Player:"
-            text player size=lg weight=bold
-        
-        row gap=16:
-            text "Game Total:"
-            text count + score size=xl weight=bold primary
-    
-    text "━━━━━━━━━━━━━━━━━━━━━━" size=md
-    
-    row gap=16:
-        button "RESET ALL" primary onClick=set(count, 0) & set(score, 100) & set(player, "Hero") & set(volume, 50)
-        button "MAX OUT" onClick=set(count, 999) & set(score, 999) & set(player, "MAX")
+component Product:
+    column gap=12:
+        image "https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+        text "Premium Sneakers" size=lg weight=bold
+        text "Price: $150" size=sm
+        button "Add to Cart" onClick=set(cart_count + 1) & set(balance - 150)
+
+column gap=40:
+    # Header
+    row gap=20:
+        text shop_name size=xl weight=bold
+        if is_member:
+            text "GOLD MEMBER" primary size=xs weight=bold
+
+    # Stats Row
+    row gap=40:
+        column:
+            text "Balance" size=sm weight=medium
+            text balance size=2xl weight=bold
+        column:
+            text "Cart Items" size=sm weight=medium
+            text cart_count size=2xl weight=bold
+
+    # Product Grid
+    row gap=30:
+        Product
+        Product
+
+    # Video Demo
+    column gap=10:
+        text "See them in action" size=md weight=semibold
+        video "https://www.w3schools.com/html/mov_bbb.mp4" controls width=400
+
+    # Actions
+    button "Reset Shop" onClick=set(balance = 1000) & set(cart_count = 0)
