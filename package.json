@@ -1,14 +1,33 @@
 {
-    "name": "klover",
-    "version": "1.0.0",
-    "main": "index.js",
-    "bin": {
-        "klover": "./cli/index.js"
-    },
-    "scripts": {
-        "start": "node index.js"
-    },
-    "dependencies": {
-        "chokidar": "^5.0.0"
-    }
+  "name": "klover",
+  "version": "1.0.0",
+  "description": "A lightweight DSL for building reactive UI",
+  "main": "index.js",
+  "bin": {
+    "klover": "cli/index.js"
+  },
+  "files": [
+    "cli",
+    "parser",
+    "runtime",
+    "renderer",
+    "shared",
+    "plugins",
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "chokidar": "^5.0.0"
+  },
+  "keywords": [
+    "dsl",
+    "ui",
+    "reactive",
+    "builder"
+  ],
+  "author": "Bhumi Jha, Yugank Das",
+  "license": "MIT"
 }

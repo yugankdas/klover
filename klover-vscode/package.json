@@ -3,7 +3,7 @@
     "displayName": "Klover",
     "description": "Klover language support",
     "version": "0.0.1",
-    "publisher": "your-name",
+    "publisher": "Yugank Das, Bhumi Jha",
     "engines": {
         "vscode": "^1.80.0"
     },

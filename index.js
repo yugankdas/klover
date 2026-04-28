@@ -4,7 +4,7 @@ const { parse } = require("./parser/parse");
 const Runtime = require("./runtime/runtime");
 const { render } = require("./renderer/render");
 
-function build(inputFile = "input.kv", outputFile = "output.html") {
+function build(inputFile = "input.kv", outputFile = "output.html", options = {}) {
     try {
         console.log("🔨 Klover Build Engine");
 
@@ -19,11 +19,11 @@ function build(inputFile = "input.kv", outputFile = "output.html") {
         runtime.init();
         console.log("✅ Runtime initialized");
 
-        // 3. Resolve initial tree
+        // 3. Resolve initial tree (Expand loops, variables, components)
         const resolvedTree = runtime.resolveTree();
         console.log("✅ Tree resolved");
 
-        // 4. Initial Render (for static SEO or just verification)
+        // 4. Initial Render
         const initialHtml = render(resolvedTree, {
             runtime,
             theme: parsed.theme
@@ -37,7 +37,7 @@ function build(inputFile = "input.kv", outputFile = "output.html") {
         const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App</title>
+    <title>Klover App - ${path.basename(inputFile)}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -140,7 +140,6 @@ function build(inputFile = "input.kv", outputFile = "output.html") {
         }
         img:hover { transform: scale(1.02); }
 
-        /* V9 Patching Animation */
         [data-kv-path] {
             transition: all 0.3s ease;
         }
@@ -151,123 +150,95 @@ function build(inputFile = "input.kv", outputFile = "output.html") {
         ${initialHtml}
     </div>
 
-    
     <script>
-        try {
-            // --- EMBEDDED SCRIPTS ---
-            
-            // 1. Runtime
-            ${runtimeCode.split(/if\s*\(typeof\s*module/)[0]}
-            window.Runtime = Runtime;
-
-            // 2. Renderer
-            ${rendererCode.split(/if\s*\(typeof\s*module/)[0]}
-            window.render = render;
-            window.renderNode = renderNode;
-
-            // --- BOOTSTRAP ---
-
-
-        let state = ${JSON.stringify(runtime.state)};
-        const rawAst = ${JSON.stringify(parsed.tree)};
-        const theme = ${JSON.stringify(parsed.theme || {})};
-        const components = ${JSON.stringify(parsed.components || {})};
-
-        // Initialize client-side runtime
-        const kRuntime = new Runtime(rawAst, components);
-        kRuntime.state = state;
-
-        // Shared render function
-        function refresh(preResolvedTree) {
+        (function() {
             try {
-                const root = document.getElementById("root");
-                const newTree = preResolvedTree || kRuntime.resolveTree();
+                // --- EMBEDDED SCRIPTS ---
                 
-                if (newTree._changes && newTree._changes.length > 0) {
-                    console.log("⚡ Klover V9: Applying surgical patches...");
-                    applyPatches(newTree._changes, root.firstElementChild);
-                } else {
-                    console.log("🔄 Klover V9: Full re-render triggered");
-                    const html = render(rawAst, { runtime: kRuntime, theme });
-                    root.innerHTML = html;
-                }
-                console.log("UI Updated. State:", kRuntime.state);
-            } catch (err) {
-                console.error("Refresh Error:", err);
-            }
-        }
+                // 1. Runtime
+                ${runtimeCode.split(/if\s*\(typeof\s*module/)[0]}
+                
+                // 2. Renderer
+                ${rendererCode.split(/if\s*\(typeof\s*module/)[0]}
 
-        function applyPatches(changes, rootEl) {
-            changes.forEach(change => {
-                try {
-                    const el = rootEl.querySelector(\`[data-kv-path="\${change.path}"]\`) || 
-                               (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
+                // --- BOOTSTRAP ---
+                const state = ${JSON.stringify(runtime.state)};
+                const rawAst = ${JSON.stringify(parsed.tree)};
+                const theme = ${JSON.stringify(parsed.theme || {})};
+                const components = ${JSON.stringify(parsed.components || {})};
 
-                    if (change.type === "changed") {
-                        const pathParts = change.path.split('.');
-                        const baseElPath = pathParts[0];
-                        const targetEl = rootEl.querySelector(\`[data-kv-path="\${baseElPath}"]\`) || 
-                                         (rootEl.getAttribute("data-kv-path") === baseElPath ? rootEl : null);
+                // Initialize client-side runtime
+                const kRuntime = new Runtime(rawAst, components);
+                kRuntime.state = state;
+
+                // Shared render function
+                function refresh(preResolvedTree) {
+                    try {
+                        const root = document.getElementById("root");
+                        const newTree = preResolvedTree || kRuntime.resolveTree();
                         
-                        if (targetEl) {
-                            if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
-                                targetEl.textContent = change.new;
-                            }
+                        if (newTree._changes && newTree._changes.length > 0) {
+                            console.log("⚡ Klover V9: Applying surgical patches...");
+                            applyPatches(newTree._changes, root.firstElementChild);
+                        } else {
+                            console.log("🔄 Klover V9: Full re-render triggered");
+                            const html = render(newTree, { runtime: kRuntime, theme });
+                            root.innerHTML = html;
                         }
-                    } else if (change.type === "replaced") {
-                        if (el) {
-                            const newHtml = renderNode(change.new, kRuntime, theme, change.path);
-                            const temp = document.createElement('div');
-                            temp.innerHTML = newHtml;
-                            el.replaceWith(temp.firstElementChild);
-                        }
-                    } else if (change.type === "added" || change.type === "removed") {
-                        // For add/remove in lists, we still trigger a re-render of the parent for safety
-                        // but we could optimize this later.
-                        const parentPath = change.path.substring(0, change.path.lastIndexOf('.children['));
-                        const parentEl = rootEl.querySelector(\`[data-kv-path="\${parentPath}"]\`) || 
-                                         (rootEl.getAttribute("data-kv-path") === parentPath ? rootEl : null);
-                        if (parentEl) {
-                            // Find the parent node in the AST to re-render it
-                            // For now, let's just do a full refresh of the whole app if add/remove happens
-                            // because managing child indices in DOM is complex.
-                            throw new Error("Complex change: falling back to full render");
-                        }
+                    } catch (err) {
+                        console.error("Refresh Error:", err);
+                        // Fallback to full render
+                        const html = render(kRuntime.resolveTree(), { runtime: kRuntime, theme });
+                        document.getElementById("root").innerHTML = html;
                     }
-                } catch (e) {
-                    // Fallback to full render if patching fails
-                    const html = render(rawAst, { runtime: kRuntime, theme });
-                    document.getElementById("root").innerHTML = html;
                 }
-            });
-        }
 
-        // Global state updaters called by HTML event listeners
-        window.__klover_executeOperations = function(opsJson, scopeJson) {
-            try {
-                // The renderer escapes quotes in JSON.stringify
-                const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
-                const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
-                kRuntime.executeOperations(ops, scope);
-            } catch (err) {
-                console.error("Klover Ops Error:", err);
+                function applyPatches(changes, rootEl) {
+                    changes.forEach(change => {
+                        try {
+                            const el = rootEl.querySelector(\`[data-kv-path="\${change.path}"]\`) || 
+                                       (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
+
+                            if (change.type === "changed") {
+                                if (el) {
+                                    if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
+                                        el.textContent = change.new;
+                                    }
+                                }
+                            } else if (change.type === "replaced" || change.type === "added" || change.type === "removed") {
+                                // For now, if complex changes happen, just refresh the nearest identifiable parent or full app
+                                throw new Error("Complex change detected");
+                            }
+                        } catch (e) {
+                            refresh();
+                        }
+                    });
+                }
+
+                // Global state updaters
+                window.__klover_executeOperations = function(opsJson, scopeJson) {
+                    try {
+                        const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
+                        const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
+                        kRuntime.executeOperations(ops, scope);
+                    } catch (err) {
+                        console.error("Klover Ops Error:", err);
+                    }
+                };
+
+                window.__klover_setState = function(target, expr) {
+                    kRuntime.setState(target, expr);
+                };
+
+                // Bind update to render cycle
+                kRuntime.onRender = refresh;
+
+                console.log("Klover Live V9 Ready");
+            } catch (bootstrapErr) {
+                console.error("Klover Bootstrap Error:", bootstrapErr);
             }
-        };
-
-        window.__klover_setState = function(target, expr) {
-            kRuntime.setState(target, expr);
-        };
-
-        // Bind update to render cycle
-        kRuntime.onRender = refresh;
-
-        console.log("Klover V7 Live");
-    } catch (bootstrapErr) {
-        console.error("Klover V7 Bootstrap Error:", bootstrapErr);
-    }
+        })();
     </script>
-
-
 </body>
 </html>`;
 

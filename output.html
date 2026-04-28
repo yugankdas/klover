@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App</title>
+    <title>Klover App - test.kv</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -104,7 +104,6 @@
         }
         img:hover { transform: scale(1.02); }
 
-        /* V9 Patching Animation */
         [data-kv-path] {
             transition: all 0.3s ease;
         }
@@ -112,16 +111,16 @@
 </head>
 <body>
     <div id="root">
-        <div class="klover-app"><div style="display:flex;flex-direction:column;align-items:center;"><div data-kv-path="children[0]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 64px""><p data-kv-path="children[0].children[0]" class="text-4xl font-bold">Futuristic Tech Store</p><div data-kv-path="children[0].children[1]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 16px""><button data-kv-path="children[0].children[1].children[0]" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;viewCart&quot;,&quot;expression&quot;:&quot;viewCart, !viewCart&quot;}]', '{}')">Cart</button><p data-kv-path="children[0].children[1].children[1]" class="text-lg font-bold">0</p></div></div><div data-kv-path="children[1].children[0]" style="display:flex;flex-direction:row;align-items:center;flex-wrap:wrap; gap: 32px""><div data-kv-path="children[1].children[0].children[0].children[0]" style="display:flex;flex-direction:column;align-items:center; gap: 12px""><img data-kv-path="children[1].children[0].children[0].children[0].children[0]" src="https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400" /><div data-kv-path="children[1].children[0].children[0].children[0].children[1]" style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[1].children[0].children[0].children[0].children[1].children[0]" class="text-xl font-bold">Quantum CPU</p><p data-kv-path="children[1].children[0].children[0].children[0].children[1].children[1]" class="text-lg">999</p></div><button data-kv-path="children[1].children[0].children[0].children[0].children[2]" class="btn-primary px-4 py-2 rounded-lg cursor-pointer" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;cart&quot;,&quot;expression&quot;:&quot;cart, [...cart, product]&quot;}]', '{&quot;item&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Quantum CPU&quot;,&quot;price&quot;:999,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400&quot;},&quot;index&quot;:0,&quot;product&quot;:{&quot;id&quot;:1,&quot;name&quot;:&quot;Quantum CPU&quot;,&quot;price&quot;:999,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400&quot;}}')">Add to Cart</button></div><div data-kv-path="children[1].children[0].children[0].children[1]" style="display:flex;flex-direction:column;align-items:center; gap: 12px""><img data-kv-path="children[1].children[0].children[0].children[1].children[0]" src="https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400" /><div data-kv-path="children[1].children[0].children[0].children[1].children[1]" style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[1].children[0].children[0].children[1].children[1].children[0]" class="text-xl font-bold">Neural GPU</p><p data-kv-path="children[1].children[0].children[0].children[1].children[1].children[1]" class="text-lg">1499</p></div><button data-kv-path="children[1].children[0].children[0].children[1].children[2]" class="btn-primary px-4 py-2 rounded-lg cursor-pointer" onclick="window.__klover_executeOperations('[{&quot;target&quot;:&quot;cart&quot;,&quot;expression&quot;:&quot;cart, [...cart, product]&quot;}]', '{&quot;item&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Neural GPU&quot;,&quot;price&quot;:1499,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400&quot;},&quot;index&quot;:1,&quot;product&quot;:{&quot;id&quot;:2,&quot;name&quot;:&quot;Neural GPU&quot;,&quot;price&quot;:1499,&quot;img&quot;:&quot;https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400&quot;}}')">Add to Cart</button></div></div></div></div>
+        <div class="klover-app"><div style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[0]">Hello Klover-CLI</p></div></div>
     </div>
 
-    
     <script>
-        try {
-            // --- EMBEDDED SCRIPTS ---
-            
-            // 1. Runtime
-            // runtime/runtime.js - V8 with Diffing Support
+        (function() {
+            try {
+                // --- EMBEDDED SCRIPTS ---
+                
+                // 1. Runtime
+                // runtime/runtime.js - V8 with Diffing Support
 class Runtime {
     constructor(ast, components = {}) {
         this.ast = ast;
@@ -161,15 +160,22 @@ class Runtime {
     // -------------------------
     // EVALUATE EXPRESSIONS
     // -------------------------
+    // -------------------------
+    // EVALUATE EXPRESSIONS
+    // -------------------------
     evaluate(expr, scope = {}) {
+        if (expr === null || expr === undefined) return null;
+        
         const context = { ...this.state, ...scope };
-        const keys = Object.keys(context);
-        const values = Object.values(context);
+        const keys = Object.keys(context).filter(k => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k));
+        const values = keys.map(k => context[k]);
 
         try {
+            const cleanExpr = String(expr).trim();
+            
             // Handle chained operations (a & b & c)
-            if (typeof expr === 'string' && expr.includes('&')) {
-                const parts = expr.split('&');
+            if (cleanExpr.includes('&')) {
+                const parts = cleanExpr.split('&');
                 let lastResult = null;
                 for (const part of parts) {
                     const fn = new Function(...keys, "return " + part.trim());
@@ -177,9 +183,12 @@ class Runtime {
                 }
                 return lastResult;
             }
-            return new Function(...keys, "return " + expr.trim())(...values);
+
+            // Standard evaluation
+            const fn = new Function(...keys, "return " + cleanExpr);
+            return fn(...values);
         } catch (e) {
-            console.error("Evaluation Error:", e, "Expression:", expr);
+            console.error("Evaluation Error:", e.message, "| Expression:", expr);
             return null;
         }
     }
@@ -199,11 +208,21 @@ class Runtime {
 
         const newValue = this.evaluate(finalExpr);
         if (newValue !== null && newValue !== undefined) {
-            this.state[actualTarget] = newValue;
-            console.log(`🔄 State updated: ${actualTarget} = ${newValue}`);
+            // Support nested state updates: set(user.name, 'bob')
+            if (actualTarget.includes('.')) {
+                const parts = actualTarget.split('.');
+                let obj = this.state;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    if (!obj[parts[i]]) obj[parts[i]] = {};
+                    obj = obj[parts[i]];
+                }
+                obj[parts[parts.length - 1]] = newValue;
+            } else {
+                this.state[actualTarget] = newValue;
+            }
+            console.log(`🔄 State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
         }
 
-        // Trigger re-render with new tree
         if (this.onRender) {
             const newTree = this.resolveTree();
             this.onRender(newTree);
@@ -218,9 +237,28 @@ class Runtime {
             const newValue = this.evaluate(op.expression, scope);
             if (newValue !== null && newValue !== undefined) {
                 const cleanTarget = op.target.trim();
-                if (this.state[cleanTarget] !== newValue) {
-                    this.state[cleanTarget] = newValue;
-                    console.log(`🔄 Operation: ${cleanTarget} = ${newValue}`);
+                
+                // Get current value for comparison
+                let currentVal;
+                if (cleanTarget.includes('.')) {
+                    currentVal = cleanTarget.split('.').reduce((o, i) => o?.[i], this.state);
+                } else {
+                    currentVal = this.state[cleanTarget];
+                }
+
+                if (JSON.stringify(currentVal) !== JSON.stringify(newValue)) {
+                    if (cleanTarget.includes('.')) {
+                        const parts = cleanTarget.split('.');
+                        let obj = this.state;
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            if (!obj[parts[i]]) obj[parts[i]] = {};
+                            obj = obj[parts[i]];
+                        }
+                        obj[parts[parts.length - 1]] = newValue;
+                    } else {
+                        this.state[cleanTarget] = newValue;
+                    }
+                    console.log(`🔄 Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
                     changed = true;
                 }
             }
@@ -246,13 +284,11 @@ class Runtime {
             return changes;
         }
 
-        // Different types
         if (oldTree.type !== newTree.type) {
             changes.push({ type: "replaced", path, old: oldTree, new: newTree });
             return changes;
         }
 
-        // Text nodes - check value change
         if (oldTree.type === "text" && oldTree.value !== newTree.value) {
             changes.push({
                 type: "changed",
@@ -262,7 +298,6 @@ class Runtime {
             });
         }
 
-        // Button nodes - check label change
         if (oldTree.type === "button" && oldTree.label !== newTree.label) {
             changes.push({
                 type: "changed",
@@ -272,7 +307,6 @@ class Runtime {
             });
         }
 
-        // Recursively check children
         const oldChildren = oldTree.children || [];
         const newChildren = newTree.children || [];
         const maxLen = Math.max(oldChildren.length, newChildren.length);
@@ -293,9 +327,6 @@ class Runtime {
 
         let resolved = null;
 
-        // -------------------------
-        // STATE (Non-visual)
-        // -------------------------
         if (node.type === "state") {
             return null;
         }
@@ -304,7 +335,6 @@ class Runtime {
             const comp = this.components[node.name];
             if (!comp || !comp.root) return null;
 
-            // Evaluate props in current scope
             const resolvedProps = {};
             if (node.props) {
                 for (const [key, expr] of Object.entries(node.props)) {
@@ -313,14 +343,10 @@ class Runtime {
                 }
             }
 
-            // Merge resolved props with existing scope
             const mergedScope = { ...scope, ...resolvedProps };
             resolved = this.resolveNode(comp.root, mergedScope);
         }
 
-        // -------------------------
-        // TEXT (VARIABLE/EXPRESSION)
-        // -------------------------
         else if (node.type === "text" && node.isVariable) {
             const value = this.evaluate(node.value, scope);
             resolved = {
@@ -330,9 +356,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // IMAGE & VIDEO
-        // -------------------------
         else if ((node.type === "image" || node.type === "video") && node.isVariable) {
             const value = this.evaluate(node.src, scope);
             resolved = {
@@ -342,9 +365,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // IF CONDITIONAL
-        // -------------------------
         else if (node.type === "if") {
             const result = this.evaluate(node.condition, scope);
             if (!result) return null;
@@ -357,25 +377,25 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // REPEAT LOOP
-        // -------------------------
         else if (node.type === "repeat") {
-            const list = this.state[node.source] || [];
+            // FIX: Evaluate source in current scope (supports expressions/nested data)
+            const list = this.evaluate(node.source, scope) || [];
             const expanded = [];
 
-            list.forEach((item, index) => {
-                const newScope = {
-                    ...scope,
-                    [node.itemName]: item,
-                    index: index
-                };
+            if (Array.isArray(list)) {
+                list.forEach((item, index) => {
+                    const newScope = {
+                        ...scope,
+                        [node.itemName]: item,
+                        index: index
+                    };
 
-                node.children.forEach(child => {
-                    const resChild = this.resolveNode(child, newScope);
-                    if (resChild) expanded.push(resChild);
+                    node.children.forEach(child => {
+                        const resChild = this.resolveNode(child, newScope);
+                        if (resChild) expanded.push(resChild);
+                    });
                 });
-            });
+            }
 
             resolved = {
                 type: "fragment",
@@ -383,9 +403,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // GENERIC NODE (with children)
-        // -------------------------
         else if (node.children) {
             resolved = {
                 ...node,
@@ -395,14 +412,10 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // LEAF NODE (no children)
-        // -------------------------
         else {
             resolved = { ...node };
         }
 
-        // BAKE SCOPE INTO NODES WITH EVENTS
         if (resolved && node.events) {
             resolved._scope = { ...scope };
         }
@@ -414,36 +427,27 @@ class Runtime {
     // V8: ENTRY POINT with tracking
     // -------------------------
     resolveTree() {
-        // Store previous tree before resolving new one
         const oldTree = this.currentTree;
-
-        // Resolve new tree
         const newTree = this.resolveNode(this.ast);
 
-        // Store for next diff
         this.previousTree = oldTree;
         this.currentTree = newTree;
 
-        // Calculate diff if we have both trees
         let changes = null;
         if (this.previousTree && this.currentTree) {
             changes = this.diffTree(this.previousTree, this.currentTree);
             if (changes.length > 0) {
                 console.log(`📊 V8 Diff: ${changes.length} change(s) detected`);
-                changes.forEach(change => {
-                    console.log(`   - ${change.type}: ${change.path || ''}`,
-                        change.old !== undefined ? `"${change.old}" → "${change.new}"` : '');
-                });
             }
         }
 
-        // Attach changes to result for renderer optimization
         if (changes && changes.length > 0) {
             newTree._changes = changes;
         }
 
         return newTree;
     }
+
 
     // -------------------------
     // HELPER: Get current state
@@ -486,10 +490,9 @@ class Runtime {
 }
 
 
-            window.Runtime = Runtime;
-
-            // 2. Renderer
-            // renderer/render.js - V8 Diff-Ready Renderer (FIXED)
+                
+                // 2. Renderer
+                // renderer/render.js - V8 Diff-Ready Renderer (FIXED)
 
 // Helper: Escape HTML to prevent XSS attacks
 function escapeHtml(str) {
@@ -564,8 +567,8 @@ function applyProps(node, theme = {}) {
 }
 
 // Main render function - converts node to HTML string
+// Main render function - converts node to HTML string
 function renderNode(node, runtime, theme = {}, path = "") {
-    // Handle null/undefined
     if (!node) return "";
 
     const pathAttr = path ? ` data-kv-path="${path}"` : "";
@@ -575,7 +578,7 @@ function renderNode(node, runtime, theme = {}, path = "") {
     // --------------------------------------------
     if (node.type === "text") {
         const attrs = applyProps(node, theme);
-        const value = escapeHtml(node.value);
+        const value = escapeHtml(node.value !== undefined ? node.value : "");
         return `<p${pathAttr}${attrs.class}${attrs.style}>${value}</p>`;
     }
 
@@ -586,7 +589,6 @@ function renderNode(node, runtime, theme = {}, path = "") {
         const attrs = applyProps(node, theme);
         const label = escapeHtml(node.label || "Button");
 
-        // Build click handler
         let onclick = "";
         if (node.events?.click?.operations) {
             const ops = JSON.stringify(node.events.click.operations).replace(/"/g, '&quot;');
@@ -623,43 +625,27 @@ function renderNode(node, runtime, theme = {}, path = "") {
     }
 
     // --------------------------------------------
-    // COLUMN NODE (Vertical Flex Container)
+    // FLEX CONTAINERS
     // --------------------------------------------
-    if (node.type === "column") {
+    if (node.type === "column" || node.type === "row") {
         const attrs = applyProps(node, theme);
+        const isColumn = node.type === "column";
 
-        let children = "";
+        let childrenHtml = "";
         if (node.children && Array.isArray(node.children)) {
-            children = node.children.map((child, i) => {
+            childrenHtml = node.children.map((child, i) => {
                 const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
                 return renderNode(child, runtime, theme, childPath);
             }).join("");
         }
 
-        const baseStyle = "display:flex;flex-direction:column;align-items:center;";
-        const existingStyle = attrs.style ? attrs.style.replace('style="', '') : '';
+        const baseStyle = isColumn 
+            ? "display:flex;flex-direction:column;align-items:center;" 
+            : "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
+        
+        const existingStyle = attrs.style ? attrs.style.replace('style="', '').replace('"', '') : '';
 
-        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${children}</div>`;
-    }
-
-    // --------------------------------------------
-    // ROW NODE (Horizontal Flex Container)
-    // --------------------------------------------
-    if (node.type === "row") {
-        const attrs = applyProps(node, theme);
-
-        let children = "";
-        if (node.children && Array.isArray(node.children)) {
-            children = node.children.map((child, i) => {
-                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
-                return renderNode(child, runtime, theme, childPath);
-            }).join("");
-        }
-
-        const baseStyle = "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
-        const existingStyle = attrs.style ? attrs.style.replace('style="', '') : '';
-
-        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${children}</div>`;
+        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${childrenHtml}</div>`;
     }
 
     // --------------------------------------------
@@ -675,163 +661,115 @@ function renderNode(node, runtime, theme = {}, path = "") {
         return "";
     }
 
-    // --------------------------------------------
-    // CUSTOM NODE (Ignore gracefully, don't crash)
-    // --------------------------------------------
-    if (node.type === "custom") {
-        console.warn(`Custom node "${node.name}" not supported, skipping`);
-        return `<!-- Custom node: ${node.name} -->`;
-    }
-
-    // --------------------------------------------
-    // UNKNOWN NODE (Log warning, return empty)
-    // --------------------------------------------
-    if (node.type !== "text" && node.type !== "button" && node.type !== "video" &&
-        node.type !== "image" && node.type !== "column" && node.type !== "row" &&
-        node.type !== "fragment" && node.type !== "custom") {
-        console.warn(`Unknown node type: ${node.type}`);
-    }
-
     return "";
 }
 
 // V8 Diff-Ready Render Function
-function render(newTree, options = {}) {
-    const { runtime, theme = {}, oldTree = null } = options;
+function render(node, options = {}) {
+    const { runtime, theme = {} } = options;
 
-    // Validate runtime
     if (!runtime) {
         console.error("❌ No runtime provided to renderer");
         return "<div>Error: No runtime provided</div>";
     }
 
-    // Resolve the tree (expand variables, components, loops)
-    let resolvedTree = newTree;
-    if (runtime.resolveTree) {
+    // If node is the raw AST, we must resolve it.
+    // If it's already resolved (has results of evaluate/repeat), we just render it.
+    let resolvedTree = node;
+    
+    // We detect if it's resolved by checking for common resolved properties
+    // or we just trust the caller. In Klover V9, build engine resolves first.
+    // But for safety, if it's the raw AST root (type generic/column with isVariable somewhere),
+    // we might need to resolve.
+    // Optimization: resolveTree() is safe to call multiple times in Runtime V8.
+    if (runtime.currentTree === null || node === runtime.ast) {
         resolvedTree = runtime.resolveTree();
-    } else if (runtime.resolveNode) {
-        resolvedTree = runtime.resolveNode(newTree);
     }
 
-    // Generate HTML - Start path at empty for root
     const html = renderNode(resolvedTree, runtime, theme, "");
-
-    // V9: Smart DOM Patching Check
-    if (resolvedTree._changes) {
-        console.log(`🚀 Smart Patching Mode: ${resolvedTree._changes.length} changes`);
-    }
-
-    // Wrap with app container
     return `<div class="klover-app">${html || ""}</div>`;
 }
 
 // Export functions
 
-            window.render = render;
-            window.renderNode = renderNode;
 
-            // --- BOOTSTRAP ---
+                // --- BOOTSTRAP ---
+                const state = {};
+                const rawAst = {"type":"column","align":"start","children":[{"type":"text","value":"Hello Klover-CLI","isVariable":false,"props":{}}],"props":{}};
+                const theme = {};
+                const components = {};
 
+                // Initialize client-side runtime
+                const kRuntime = new Runtime(rawAst, components);
+                kRuntime.state = state;
 
-        let state = {"cart":[],"products":[{"id":1,"name":"Quantum CPU","price":999,"img":"https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400"},{"id":2,"name":"Neural GPU","price":1499,"img":"https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400"}],"viewCart":false};
-        const rawAst = {"type":"column","align":"start","children":[{"type":"state","key":"cart","value":[]},{"type":"state","key":"products","value":[{"id":1,"name":"Quantum CPU","price":999,"img":"https://images.unsplash.com/photo-1591815302525-756a9bcc3425?w=400"},{"id":2,"name":"Neural GPU","price":1499,"img":"https://images.unsplash.com/photo-1591405351990-4726e331f141?w=400"}]},{"type":"state","key":"viewCart","value":false},{"type":"row","children":[{"type":"text","value":"Futuristic Tech Store","isVariable":false,"props":{"size":"4xl","weight":"bold"}},{"type":"row","children":[{"type":"button","label":"Cart","props":{},"events":{"click":{"operations":[{"target":"viewCart","expression":"viewCart, !viewCart"}]}}},{"type":"text","value":"cart.length","isVariable":true,"props":{"size":"lg","weight":"bold"}}],"props":{"gap":16}}],"props":{"gap":64}},{"type":"if","condition":"!viewCart","children":[{"type":"row","children":[{"type":"repeat","source":"products","itemName":"item","children":[{"type":"component","name":"ProductCard","props":{"product":"item"}}]}],"props":{"gap":32}}]},{"type":"if","condition":"viewCart","children":[{"type":"column","align":"start","children":[{"type":"row","children":[{"type":"text","value":"Your Cart","isVariable":false,"props":{"size":"3xl","weight":"bold"}},{"type":"button","label":"Back","props":{},"events":{"click":{"operations":[{"target":"viewCart","expression":"viewCart, false"}]}}}],"props":{}},{"type":"if","condition":"cart.length === 0","children":[{"type":"text","value":"Your cart is lonely.","isVariable":false,"props":{"size":"lg"}}]},{"type":"column","align":"start","children":[{"type":"repeat","source":"cart","itemName":"item","children":[{"type":"row","children":[{"type":"image","src":"item.img","props":{},"isVariable":true},{"type":"column","align":"start","children":[{"type":"text","value":"item.name","isVariable":true,"props":{"weight":"bold"}},{"type":"text","value":"item.price","isVariable":true,"props":{}}],"props":{}}],"props":{"gap":20}}]}],"props":{"gap":12}},{"type":"if","condition":"cart.length > 0","children":[{"type":"button","label":"Checkout - Clear Cart","props":{},"events":{"click":{"operations":[{"target":"cart","expression":"cart, []"},{"target":"viewCart","expression":"viewCart, false"}]}}}]}],"props":{"gap":24}}]}],"props":{}};
-        const theme = {};
-        const components = {"ProductCard":{"root":{"type":"column","align":"start","children":[{"type":"image","src":"product.img","props":{},"isVariable":true},{"type":"column","align":"start","children":[{"type":"text","value":"product.name","isVariable":true,"props":{"weight":"bold","size":"xl"}},{"type":"text","value":"product.price","isVariable":true,"props":{"size":"lg"}}],"props":{}},{"type":"button","label":"Add to Cart","props":{"primary":true},"events":{"click":{"operations":[{"target":"cart","expression":"cart, [...cart, product]"}]}}}],"props":{"gap":12}}}};
-
-        // Initialize client-side runtime
-        const kRuntime = new Runtime(rawAst, components);
-        kRuntime.state = state;
-
-        // Shared render function
-        function refresh(preResolvedTree) {
-            try {
-                const root = document.getElementById("root");
-                const newTree = preResolvedTree || kRuntime.resolveTree();
-                
-                if (newTree._changes && newTree._changes.length > 0) {
-                    console.log("⚡ Klover V9: Applying surgical patches...");
-                    applyPatches(newTree._changes, root.firstElementChild);
-                } else {
-                    console.log("🔄 Klover V9: Full re-render triggered");
-                    const html = render(rawAst, { runtime: kRuntime, theme });
-                    root.innerHTML = html;
-                }
-                console.log("UI Updated. State:", kRuntime.state);
-            } catch (err) {
-                console.error("Refresh Error:", err);
-            }
-        }
-
-        function applyPatches(changes, rootEl) {
-            changes.forEach(change => {
-                try {
-                    const el = rootEl.querySelector(`[data-kv-path="${change.path}"]`) || 
-                               (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
-
-                    if (change.type === "changed") {
-                        const pathParts = change.path.split('.');
-                        const baseElPath = pathParts[0];
-                        const targetEl = rootEl.querySelector(`[data-kv-path="${baseElPath}"]`) || 
-                                         (rootEl.getAttribute("data-kv-path") === baseElPath ? rootEl : null);
+                // Shared render function
+                function refresh(preResolvedTree) {
+                    try {
+                        const root = document.getElementById("root");
+                        const newTree = preResolvedTree || kRuntime.resolveTree();
                         
-                        if (targetEl) {
-                            if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
-                                targetEl.textContent = change.new;
-                            }
+                        if (newTree._changes && newTree._changes.length > 0) {
+                            console.log("⚡ Klover V9: Applying surgical patches...");
+                            applyPatches(newTree._changes, root.firstElementChild);
+                        } else {
+                            console.log("🔄 Klover V9: Full re-render triggered");
+                            const html = render(newTree, { runtime: kRuntime, theme });
+                            root.innerHTML = html;
                         }
-                    } else if (change.type === "replaced") {
-                        if (el) {
-                            const newHtml = renderNode(change.new, kRuntime, theme, change.path);
-                            const temp = document.createElement('div');
-                            temp.innerHTML = newHtml;
-                            el.replaceWith(temp.firstElementChild);
-                        }
-                    } else if (change.type === "added" || change.type === "removed") {
-                        // For add/remove in lists, we still trigger a re-render of the parent for safety
-                        // but we could optimize this later.
-                        const parentPath = change.path.substring(0, change.path.lastIndexOf('.children['));
-                        const parentEl = rootEl.querySelector(`[data-kv-path="${parentPath}"]`) || 
-                                         (rootEl.getAttribute("data-kv-path") === parentPath ? rootEl : null);
-                        if (parentEl) {
-                            // Find the parent node in the AST to re-render it
-                            // For now, let's just do a full refresh of the whole app if add/remove happens
-                            // because managing child indices in DOM is complex.
-                            throw new Error("Complex change: falling back to full render");
-                        }
+                    } catch (err) {
+                        console.error("Refresh Error:", err);
+                        // Fallback to full render
+                        const html = render(kRuntime.resolveTree(), { runtime: kRuntime, theme });
+                        document.getElementById("root").innerHTML = html;
                     }
-                } catch (e) {
-                    // Fallback to full render if patching fails
-                    const html = render(rawAst, { runtime: kRuntime, theme });
-                    document.getElementById("root").innerHTML = html;
                 }
-            });
-        }
 
-        // Global state updaters called by HTML event listeners
-        window.__klover_executeOperations = function(opsJson, scopeJson) {
-            try {
-                // The renderer escapes quotes in JSON.stringify
-                const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
-                const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
-                kRuntime.executeOperations(ops, scope);
-            } catch (err) {
-                console.error("Klover Ops Error:", err);
+                function applyPatches(changes, rootEl) {
+                    changes.forEach(change => {
+                        try {
+                            const el = rootEl.querySelector(`[data-kv-path="${change.path}"]`) || 
+                                       (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
+
+                            if (change.type === "changed") {
+                                if (el) {
+                                    if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
+                                        el.textContent = change.new;
+                                    }
+                                }
+                            } else if (change.type === "replaced" || change.type === "added" || change.type === "removed") {
+                                // For now, if complex changes happen, just refresh the nearest identifiable parent or full app
+                                throw new Error("Complex change detected");
+                            }
+                        } catch (e) {
+                            refresh();
+                        }
+                    });
+                }
+
+                // Global state updaters
+                window.__klover_executeOperations = function(opsJson, scopeJson) {
+                    try {
+                        const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
+                        const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
+                        kRuntime.executeOperations(ops, scope);
+                    } catch (err) {
+                        console.error("Klover Ops Error:", err);
+                    }
+                };
+
+                window.__klover_setState = function(target, expr) {
+                    kRuntime.setState(target, expr);
+                };
+
+                // Bind update to render cycle
+                kRuntime.onRender = refresh;
+
+                console.log("Klover Live V9 Ready");
+            } catch (bootstrapErr) {
+                console.error("Klover Bootstrap Error:", bootstrapErr);
             }
-        };
-
-        window.__klover_setState = function(target, expr) {
-            kRuntime.setState(target, expr);
-        };
-
-        // Bind update to render cycle
-        kRuntime.onRender = refresh;
-
-        console.log("Klover V7 Live");
-    } catch (bootstrapErr) {
-        console.error("Klover V7 Bootstrap Error:", bootstrapErr);
-    }
+        })();
     </script>
-
-
 </body>
 </html>

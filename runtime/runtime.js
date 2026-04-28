@@ -38,15 +38,22 @@ class Runtime {
     // -------------------------
     // EVALUATE EXPRESSIONS
     // -------------------------
+    // -------------------------
+    // EVALUATE EXPRESSIONS
+    // -------------------------
     evaluate(expr, scope = {}) {
+        if (expr === null || expr === undefined) return null;
+        
         const context = { ...this.state, ...scope };
-        const keys = Object.keys(context);
-        const values = Object.values(context);
+        const keys = Object.keys(context).filter(k => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(k));
+        const values = keys.map(k => context[k]);
 
         try {
+            const cleanExpr = String(expr).trim();
+            
             // Handle chained operations (a & b & c)
-            if (typeof expr === 'string' && expr.includes('&')) {
-                const parts = expr.split('&');
+            if (cleanExpr.includes('&')) {
+                const parts = cleanExpr.split('&');
                 let lastResult = null;
                 for (const part of parts) {
                     const fn = new Function(...keys, "return " + part.trim());
@@ -54,9 +61,12 @@ class Runtime {
                 }
                 return lastResult;
             }
-            return new Function(...keys, "return " + expr.trim())(...values);
+
+            // Standard evaluation
+            const fn = new Function(...keys, "return " + cleanExpr);
+            return fn(...values);
         } catch (e) {
-            console.error("Evaluation Error:", e, "Expression:", expr);
+            console.error("Evaluation Error:", e.message, "| Expression:", expr);
             return null;
         }
     }
@@ -76,11 +86,21 @@ class Runtime {
 
         const newValue = this.evaluate(finalExpr);
         if (newValue !== null && newValue !== undefined) {
-            this.state[actualTarget] = newValue;
-            console.log(`🔄 State updated: ${actualTarget} = ${newValue}`);
+            // Support nested state updates: set(user.name, 'bob')
+            if (actualTarget.includes('.')) {
+                const parts = actualTarget.split('.');
+                let obj = this.state;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    if (!obj[parts[i]]) obj[parts[i]] = {};
+                    obj = obj[parts[i]];
+                }
+                obj[parts[parts.length - 1]] = newValue;
+            } else {
+                this.state[actualTarget] = newValue;
+            }
+            console.log(`🔄 State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
         }
 
-        // Trigger re-render with new tree
         if (this.onRender) {
             const newTree = this.resolveTree();
             this.onRender(newTree);
@@ -95,9 +115,28 @@ class Runtime {
             const newValue = this.evaluate(op.expression, scope);
             if (newValue !== null && newValue !== undefined) {
                 const cleanTarget = op.target.trim();
-                if (this.state[cleanTarget] !== newValue) {
-                    this.state[cleanTarget] = newValue;
-                    console.log(`🔄 Operation: ${cleanTarget} = ${newValue}`);
+                
+                // Get current value for comparison
+                let currentVal;
+                if (cleanTarget.includes('.')) {
+                    currentVal = cleanTarget.split('.').reduce((o, i) => o?.[i], this.state);
+                } else {
+                    currentVal = this.state[cleanTarget];
+                }
+
+                if (JSON.stringify(currentVal) !== JSON.stringify(newValue)) {
+                    if (cleanTarget.includes('.')) {
+                        const parts = cleanTarget.split('.');
+                        let obj = this.state;
+                        for (let i = 0; i < parts.length - 1; i++) {
+                            if (!obj[parts[i]]) obj[parts[i]] = {};
+                            obj = obj[parts[i]];
+                        }
+                        obj[parts[parts.length - 1]] = newValue;
+                    } else {
+                        this.state[cleanTarget] = newValue;
+                    }
+                    console.log(`🔄 Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
                     changed = true;
                 }
             }
@@ -123,13 +162,11 @@ class Runtime {
             return changes;
         }
 
-        // Different types
         if (oldTree.type !== newTree.type) {
             changes.push({ type: "replaced", path, old: oldTree, new: newTree });
             return changes;
         }
 
-        // Text nodes - check value change
         if (oldTree.type === "text" && oldTree.value !== newTree.value) {
             changes.push({
                 type: "changed",
@@ -139,7 +176,6 @@ class Runtime {
             });
         }
 
-        // Button nodes - check label change
         if (oldTree.type === "button" && oldTree.label !== newTree.label) {
             changes.push({
                 type: "changed",
@@ -149,7 +185,6 @@ class Runtime {
             });
         }
 
-        // Recursively check children
         const oldChildren = oldTree.children || [];
         const newChildren = newTree.children || [];
         const maxLen = Math.max(oldChildren.length, newChildren.length);
@@ -170,9 +205,6 @@ class Runtime {
 
         let resolved = null;
 
-        // -------------------------
-        // STATE (Non-visual)
-        // -------------------------
         if (node.type === "state") {
             return null;
         }
@@ -181,7 +213,6 @@ class Runtime {
             const comp = this.components[node.name];
             if (!comp || !comp.root) return null;
 
-            // Evaluate props in current scope
             const resolvedProps = {};
             if (node.props) {
                 for (const [key, expr] of Object.entries(node.props)) {
@@ -190,14 +221,10 @@ class Runtime {
                 }
             }
 
-            // Merge resolved props with existing scope
             const mergedScope = { ...scope, ...resolvedProps };
             resolved = this.resolveNode(comp.root, mergedScope);
         }
 
-        // -------------------------
-        // TEXT (VARIABLE/EXPRESSION)
-        // -------------------------
         else if (node.type === "text" && node.isVariable) {
             const value = this.evaluate(node.value, scope);
             resolved = {
@@ -207,9 +234,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // IMAGE & VIDEO
-        // -------------------------
         else if ((node.type === "image" || node.type === "video") && node.isVariable) {
             const value = this.evaluate(node.src, scope);
             resolved = {
@@ -219,9 +243,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // IF CONDITIONAL
-        // -------------------------
         else if (node.type === "if") {
             const result = this.evaluate(node.condition, scope);
             if (!result) return null;
@@ -234,25 +255,25 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // REPEAT LOOP
-        // -------------------------
         else if (node.type === "repeat") {
-            const list = this.state[node.source] || [];
+            // FIX: Evaluate source in current scope (supports expressions/nested data)
+            const list = this.evaluate(node.source, scope) || [];
             const expanded = [];
 
-            list.forEach((item, index) => {
-                const newScope = {
-                    ...scope,
-                    [node.itemName]: item,
-                    index: index
-                };
+            if (Array.isArray(list)) {
+                list.forEach((item, index) => {
+                    const newScope = {
+                        ...scope,
+                        [node.itemName]: item,
+                        index: index
+                    };
 
-                node.children.forEach(child => {
-                    const resChild = this.resolveNode(child, newScope);
-                    if (resChild) expanded.push(resChild);
+                    node.children.forEach(child => {
+                        const resChild = this.resolveNode(child, newScope);
+                        if (resChild) expanded.push(resChild);
+                    });
                 });
-            });
+            }
 
             resolved = {
                 type: "fragment",
@@ -260,9 +281,6 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // GENERIC NODE (with children)
-        // -------------------------
         else if (node.children) {
             resolved = {
                 ...node,
@@ -272,14 +290,10 @@ class Runtime {
             };
         }
 
-        // -------------------------
-        // LEAF NODE (no children)
-        // -------------------------
         else {
             resolved = { ...node };
         }
 
-        // BAKE SCOPE INTO NODES WITH EVENTS
         if (resolved && node.events) {
             resolved._scope = { ...scope };
         }
@@ -291,36 +305,27 @@ class Runtime {
     // V8: ENTRY POINT with tracking
     // -------------------------
     resolveTree() {
-        // Store previous tree before resolving new one
         const oldTree = this.currentTree;
-
-        // Resolve new tree
         const newTree = this.resolveNode(this.ast);
 
-        // Store for next diff
         this.previousTree = oldTree;
         this.currentTree = newTree;
 
-        // Calculate diff if we have both trees
         let changes = null;
         if (this.previousTree && this.currentTree) {
             changes = this.diffTree(this.previousTree, this.currentTree);
             if (changes.length > 0) {
                 console.log(`📊 V8 Diff: ${changes.length} change(s) detected`);
-                changes.forEach(change => {
-                    console.log(`   - ${change.type}: ${change.path || ''}`,
-                        change.old !== undefined ? `"${change.old}" → "${change.new}"` : '');
-                });
             }
         }
 
-        // Attach changes to result for renderer optimization
         if (changes && changes.length > 0) {
             newTree._changes = changes;
         }
 
         return newTree;
     }
+
 
     // -------------------------
     // HELPER: Get current state
