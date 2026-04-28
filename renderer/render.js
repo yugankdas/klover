@@ -1,6 +1,7 @@
-// renderer/render.js - V7 String Renderer (FIXED)
+// renderer/render.js - V8 Diff-Ready Renderer (FIXED)
+
+// Helper: Escape HTML to prevent XSS attacks
 function escapeHtml(str) {
-    // FIX: Handle undefined/null
     if (str === undefined || str === null) return "";
     return String(str)
         .replace(/&/g, "&amp;")
@@ -10,13 +11,15 @@ function escapeHtml(str) {
         .replace(/'/g, "&#39;");
 }
 
+// Helper: Convert props to CSS classes and styles
 function applyProps(node, theme = {}) {
-    let classes = [];
-    let styleRules = [];
-
-    if (!node || !node.props) return { class: "", style: "" };
+    // FIX: Check if node exists and has props
+    if (!node) return { class: "", style: "" };
+    if (!node.props) return { class: "", style: "" };
 
     const props = node.props;
+    let classes = [];
+    let styles = [];
 
     // Size mapping
     const sizeMap = {
@@ -25,116 +28,141 @@ function applyProps(node, theme = {}) {
         "3xl": "text-3xl", "4xl": "text-4xl"
     };
 
+    // Weight mapping
     const weightMap = {
         normal: "font-normal", medium: "font-medium",
-        semibold: "font-semibold", bold: "font-bold", extrabold: "font-extrabold"
+        semibold: "font-semibold", bold: "font-bold",
+        extrabold: "font-extrabold"
     };
 
-    if (props.size && sizeMap[props.size]) classes.push(sizeMap[props.size]);
-    if (props.weight && weightMap[props.weight]) classes.push(weightMap[props.weight]);
+    // Apply size
+    if (props.size && sizeMap[props.size]) {
+        classes.push(sizeMap[props.size]);
+    }
 
-    if (props.primary) {
-        classes.push("bg-primary", "text-white");
+    // Apply weight
+    if (props.weight && weightMap[props.weight]) {
+        classes.push(weightMap[props.weight]);
+    }
+
+    // Apply primary button styling
+    if (props.primary === true || props.primary === "true") {
+        classes.push("btn-primary");
         classes.push("px-4", "py-2", "rounded-lg", "cursor-pointer");
     }
 
+    // Apply danger button styling
+    if (props.danger === true || props.danger === "true") {
+        classes.push("btn-danger");
+    }
+
+    // Apply gap for flex containers
     if (props.gap !== undefined) {
-        styleRules.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
+        styles.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
+    }
+
+    // Apply theme colors
+    if (theme && theme.primary && !props.primary) {
+        classes.push(`text-[${theme.primary}]`);
     }
 
     return {
         class: classes.length ? ` class="${classes.join(' ')}"` : "",
-        styleRules: styleRules
+        style: styles.length ? ` style="${styles.join('; ')}"` : ""
     };
 }
 
-function renderNode(node, runtime, theme = {}) {
+// Main render function - converts node to HTML string
+// Main render function - converts node to HTML string
+function renderNode(node, runtime, theme = {}, path = "") {
     if (!node) return "";
 
-    // TEXT
+    const pathAttr = path ? ` data-kv-path="${path}"` : "";
+
+    // --------------------------------------------
+    // TEXT NODE
+    // --------------------------------------------
     if (node.type === "text") {
         const attrs = applyProps(node, theme);
-        let value = node.value;
-        if (value === undefined || value === null) value = "";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<p${attrs.class}${styleAttr}>${escapeHtml(value)}</p>`;
+        const value = escapeHtml(node.value !== undefined ? node.value : "");
+        return `<p${pathAttr}${attrs.class}${attrs.style}>${value}</p>`;
     }
 
-    // BUTTON
+    // --------------------------------------------
+    // BUTTON NODE
+    // --------------------------------------------
     if (node.type === "button") {
         const attrs = applyProps(node, theme);
-        const label = node.label || "Button";
+        const label = escapeHtml(node.label || "Button");
+
         let onclick = "";
-
-        // Default classes for a polished look if not primary
-        const classes = attrs.class || ' class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl transition-all duration-200"';
-        
-        if (node.events?.click) {
-
-            const click = node.events.click;
-            
-            if (click.operations) {
-                // Multi-operation (V6+)
-                const opsJson = JSON.stringify(click.operations).replace(/"/g, "&quot;");
-                onclick = ` onclick="window.updateOperations(${opsJson})"`;
-            } else if (click.target && click.expression) {
-                // Simple operation
-                onclick = ` onclick="window.updateState('${escapeHtml(click.target)}', '${escapeHtml(click.expression).replace(/'/g, "\\'")}')"`;
-            }
+        if (node.events?.click?.operations) {
+            const ops = JSON.stringify(node.events.click.operations).replace(/"/g, '&quot;');
+            const scope = JSON.stringify(node._scope || {}).replace(/"/g, '&quot;');
+            onclick = ` onclick="window.__klover_executeOperations('${ops}', '${scope}')"`;
         }
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<button${classes}${styleAttr}${onclick}>${escapeHtml(label)}</button>`;
+
+        return `<button${pathAttr}${attrs.class}${attrs.style}${onclick}>${label}</button>`;
     }
 
-
-
-    // VIDEO
+    // --------------------------------------------
+    // VIDEO NODE
+    // --------------------------------------------
     if (node.type === "video") {
         const attrs = applyProps(node, theme);
-        const src = node.src || "";
-        let videoAttrs = ` src="${escapeHtml(src)}"`;
+        const src = escapeHtml(node.src || "");
+
+        let videoAttrs = ` src="${src}"`;
         if (node.props?.controls) videoAttrs += " controls";
         if (node.props?.autoplay) videoAttrs += " autoplay";
         if (node.props?.loop) videoAttrs += " loop";
         if (node.props?.muted) videoAttrs += " muted";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<video${videoAttrs}${attrs.class}${styleAttr}></video>`;
+
+        return `<video${pathAttr}${videoAttrs}${attrs.class}${attrs.style}></video>`;
     }
 
-    // IMAGE
+    // --------------------------------------------
+    // IMAGE NODE
+    // --------------------------------------------
     if (node.type === "image") {
         const attrs = applyProps(node, theme);
-        const src = node.src || "";
-        const styleAttr = attrs.styleRules.length ? ` style="${attrs.styleRules.join('; ')}"` : "";
-        return `<img src="${escapeHtml(src)}"${attrs.class}${styleAttr} />`;
+        const src = escapeHtml(node.src || "");
+        return `<img${pathAttr} src="${src}"${attrs.class}${attrs.style} />`;
     }
 
-    // COLUMN
-    if (node.type === "column") {
+    // --------------------------------------------
+    // FLEX CONTAINERS
+    // --------------------------------------------
+    if (node.type === "column" || node.type === "row") {
         const attrs = applyProps(node, theme);
-        let children = "";
+        const isColumn = node.type === "column";
+
+        let childrenHtml = "";
         if (node.children && Array.isArray(node.children)) {
-            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
+            childrenHtml = node.children.map((child, i) => {
+                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+                return renderNode(child, runtime, theme, childPath);
+            }).join("");
         }
-        const styles = ["display:flex", "flex-direction:column", "align-items:center", ...attrs.styleRules];
-        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
+
+        const baseStyle = isColumn 
+            ? "display:flex;flex-direction:column;align-items:center;" 
+            : "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
+        
+        const existingStyle = attrs.style ? attrs.style.replace('style="', '').replace('"', '') : '';
+
+        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${childrenHtml}</div>`;
     }
 
-    // ROW
-    if (node.type === "row") {
-        const attrs = applyProps(node, theme);
-        let children = "";
-        if (node.children && Array.isArray(node.children)) {
-            children = node.children.map(c => renderNode(c, runtime, theme)).join("");
-        }
-        const styles = ["display:flex", "flex-direction:row", "align-items:center", "flex-wrap:wrap", ...attrs.styleRules];
-        return `<div${attrs.class} style="${styles.join('; ')}">${children}</div>`;
-    }
-
-    // FRAGMENT
+    // --------------------------------------------
+    // FRAGMENT NODE (No wrapper, just children)
+    // --------------------------------------------
     if (node.type === "fragment") {
         if (node.children && Array.isArray(node.children)) {
-            return node.children.map(c => renderNode(c, runtime, theme)).join("");
+            return node.children.map((child, i) => {
+                const childPath = path ? `${path}.children[${i}]` : `children[${i}]`;
+                return renderNode(child, runtime, theme, childPath);
+            }).join("");
         }
         return "";
     }
@@ -142,15 +170,33 @@ function renderNode(node, runtime, theme = {}) {
     return "";
 }
 
-function render(tree, options = {}) {
+// V8 Diff-Ready Render Function
+function render(node, options = {}) {
     const { runtime, theme = {} } = options;
-    if (!runtime) return "<div>Error: No runtime</div>";
 
-    const resolved = runtime.resolveTree ? runtime.resolveTree() : tree;
-    const html = renderNode(resolved, runtime, theme);
+    if (!runtime) {
+        console.error("❌ No runtime provided to renderer");
+        return "<div>Error: No runtime provided</div>";
+    }
+
+    // If node is the raw AST, we must resolve it.
+    // If it's already resolved (has results of evaluate/repeat), we just render it.
+    let resolvedTree = node;
+    
+    // We detect if it's resolved by checking for common resolved properties
+    // or we just trust the caller. In Klover V9, build engine resolves first.
+    // But for safety, if it's the raw AST root (type generic/column with isVariable somewhere),
+    // we might need to resolve.
+    // Optimization: resolveTree() is safe to call multiple times in Runtime V8.
+    if (runtime.currentTree === null || node === runtime.ast) {
+        resolvedTree = runtime.resolveTree();
+    }
+
+    const html = renderNode(resolvedTree, runtime, theme, "");
     return `<div class="klover-app">${html || ""}</div>`;
 }
 
+// Export functions
 if (typeof module !== "undefined") {
     module.exports = { render, renderNode, applyProps, escapeHtml };
-}
+}

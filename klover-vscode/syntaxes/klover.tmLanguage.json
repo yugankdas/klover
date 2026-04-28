@@ -1,0 +1,25 @@
+{
+    "scopeName": "source.klover",
+    "patterns": [
+        {
+            "match": "\\b(text|button|column|row|image|video|state|repeat|if|component)\\b",
+            "name": "keyword.control.klover"
+        },
+        {
+            "match": "\".*?\"",
+            "name": "string.quoted.double.klover"
+        },
+        {
+            "match": "\\b(onClick|set)\\b",
+            "name": "keyword.function.klover"
+        },
+        {
+            "match": "\\b[a-zA-Z_]+(?==)",
+            "name": "variable.parameter.klover"
+        },
+        {
+            "match": "\\b\\d+\\b",
+            "name": "constant.numeric.klover"
+        }
+    ]
+}

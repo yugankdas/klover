@@ -32,27 +32,70 @@ function getIndent(line) {
 // -----------------------------
 // 🔥 NEW: PROP PARSER
 // -----------------------------
+// -----------------------------
+// 🔥 NEW: ROBUST TOKENIZER
+// -----------------------------
+function tokenize(line) {
+    const parts = [];
+    let current = "";
+    let inQuotes = false;
+    let depth = 0; // for parentheses
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+            inQuotes = !inQuotes;
+            current += char;
+        } else if (char === '(' && !inQuotes) {
+            depth++;
+            current += char;
+        } else if (char === ')' && !inQuotes) {
+            depth--;
+            current += char;
+        } else if (char === ' ' && !inQuotes && depth === 0) {
+            if (current.length > 0) parts.push(current);
+            current = "";
+        } else {
+            current += char;
+        }
+    }
+    if (current.length > 0) parts.push(current);
+    return parts;
+}
+
+// -----------------------------
+// 🔥 NEW: PROP PARSER
+// -----------------------------
 function extractProps(parts) {
     const props = {};
-    const validFlags = ["primary", "controls", "autoplay", "muted", "loop"];
+    const validFlags = ["primary", "controls", "autoplay", "muted", "loop", "danger"];
 
     parts.forEach(p => {
         if (p.includes("=")) {
-            let [key, value] = p.split("=");
+            // Handle cases like onClick=set(a, b) where split("=") would break
+            const firstEqual = p.indexOf("=");
+            let key = p.substring(0, firstEqual).trim();
+            let value = p.substring(firstEqual + 1).trim();
 
             // number conversion
-            if (!isNaN(value) && value !== "") {
+            if (!isNaN(value) && value !== "" && !value.startsWith("0x")) {
                 value = Number(value);
+            } else if (value === "true") {
+                value = true;
+            } else if (value === "false") {
+                value = false;
+            } else if (value === "null") {
+                value = null;
             }
 
             // strip quotes
-            if (value?.toString().startsWith('"') && value.toString().endsWith('"')) {
-                value = value.toString().slice(1, -1);
+            if (typeof value === "string" && value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1);
             }
 
             props[key] = value;
         } else if (validFlags.includes(p)) {
-            // flag props (autoplay, controls, etc.)
             props[p] = true;
         }
     });
@@ -76,12 +119,12 @@ function parse(input) {
     for (let line of lines) {
         const trimmed = line.trim();
         const indent = getIndent(line);
-        const parts = trimmed.split(" ");
+        const parts = tokenize(trimmed);
 
         let node = null;
 
         // -------------------------
-        // THEME (simple for now)
+        // THEME
         // -------------------------
         if (trimmed.startsWith("theme")) {
             theme = parts[1] || null;
@@ -93,15 +136,22 @@ function parse(input) {
         // -------------------------
         if (trimmed.startsWith("state")) {
             const key = parts[1];
-            let rawValue = parts.slice(3).join(" ");
+            // Find the start of the value after '='
+            const rawLine = trimmed;
+            const eqIndex = rawLine.indexOf("=");
+            let value = null;
 
-            let value;
-            try {
-                value = JSON.parse(rawValue);
-            } catch {
-                value = isNaN(rawValue) ? rawValue : Number(rawValue);
+            if (eqIndex !== -1) {
+                const rawValue = rawLine.substring(eqIndex + 1).trim();
+                try {
+                    value = JSON.parse(rawValue);
+                } catch {
+                    if (rawValue === "true") value = true;
+                    else if (rawValue === "false") value = false;
+                    else if (rawValue === "null") value = null;
+                    else value = isNaN(rawValue) || rawValue === "" ? rawValue : Number(rawValue);
+                }
             }
-
             node = createState(key, value);
         }
 
@@ -116,6 +166,7 @@ function parse(input) {
             continue;
         }
 
+        // Handle end of component block
         if (indent === 0 && currentComponent && !trimmed.startsWith("component")) {
             currentComponent = null;
             stack.length = 0;
@@ -126,14 +177,21 @@ function parse(input) {
         // -------------------------
         else if (trimmed.startsWith("repeat")) {
             const source = parts[1].replace(":", "");
-            node = createRepeat(source, "item", []);
+            let itemName = "item";
+            
+            // Support "repeat products as p:"
+            if (parts[2] === "as" && parts[3]) {
+                itemName = parts[3].replace(":", "");
+            }
+            
+            node = createRepeat(source, itemName, []);
         }
 
         // -------------------------
         // IF
         // -------------------------
         else if (trimmed.startsWith("if")) {
-            const condition = trimmed.replace("if", "").replace(":", "").trim();
+            const condition = trimmed.replace(/^if\s+/, "").replace(/:$/, "").trim();
             node = createIf(condition, []);
         }
 
@@ -144,24 +202,29 @@ function parse(input) {
             const rest = trimmed.replace(/^text\s+/, "");
             
             if (rest.startsWith('"')) {
-                // Quoted string: text "Hello world" size=md
-                const match = rest.match(/"(.*?)"/);
-                if (match) {
-                    const content = match[1];
-                    const after = rest.slice(match.index + match[0].length).trim();
-                    const propParts = after.split(/\s+/).filter(Boolean);
+                // Find matching end quote
+                let endIdx = -1;
+                for (let i = 1; i < rest.length; i++) {
+                    if (rest[i] === '"' && rest[i-1] !== '\\') {
+                        endIdx = i;
+                        break;
+                    }
+                }
+
+                if (endIdx !== -1) {
+                    const content = rest.substring(1, endIdx);
+                    const after = rest.substring(endIdx + 1).trim();
+                    const propParts = tokenize(after);
                     node = createText(content, false, extractProps(propParts));
                 }
             } else {
-                // Expression or variable: text count * 2 size=md
-                const allParts = rest.split(/\s+/).filter(Boolean);
+                // Expression or variable
+                const allParts = tokenize(rest);
                 const contentParts = [];
                 const propParts = [];
-                const validFlags = ["primary", "controls", "autoplay", "muted", "loop"];
+                const validFlags = ["primary", "controls", "autoplay", "muted", "loop", "danger"];
 
                 allParts.forEach(p => {
-                    // A prop part either has '=' or is a known flag. 
-                    // To be safe, we check if it looks like a prop.
                     if (p.includes("=") || validFlags.includes(p)) {
                         propParts.push(p);
                     } else {
@@ -178,107 +241,145 @@ function parse(input) {
         // BUTTON
         // -------------------------
         else if (trimmed.startsWith("button")) {
-            const match = trimmed.match(/"(.*?)"/);
+            const rest = trimmed.replace(/^button\s+/, "");
+            let label = "Button";
+            let after = rest;
 
-            if (match) {
-                const label = match[1];
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                
-                // Separate events from props
-                // Example: onClick=set(count, 0) & set(score, 100) primary
-                let events = null;
-                let propsContent = after;
+            if (rest.startsWith('"')) {
+                let endIdx = -1;
+                for (let i = 1; i < rest.length; i++) {
+                    if (rest[i] === '"' && rest[i-1] !== '\\') {
+                        endIdx = i;
+                        break;
+                    }
+                }
+                if (endIdx !== -1) {
+                    label = rest.substring(1, endIdx);
+                    after = rest.substring(endIdx + 1).trim();
+                }
+            }
 
-                if (after.includes("onClick=")) {
-                    const clickMatch = after.match(/onClick=(set\(.*?\)(?:\s*&\s*set\(.*?\))*)/);
-                    if (clickMatch) {
-                        const fullAction = clickMatch[1];
-                        const operations = fullAction.split(/\s*&\s*/).map(op => {
-                            const opMatch = op.match(/set\((.*?)\)/);
-                            if (opMatch) {
-                                const expr = opMatch[1];
-                                // Clean target: split by comma or space or operators, take first
-                                const target = expr.split(/[\s,+\-*/=]/)[0].trim();
-                                return { target, expression: expr };
-                            }
-                            return null;
-                        }).filter(Boolean);
+            // Separate events from props
+            let events = null;
+            let propsContent = after;
 
-                        events = { click: { operations } };
-                        propsContent = after.replace(clickMatch[0], "").trim();
+            if (after.includes("onClick=")) {
+                // Find full onClick value including nested parens
+                const clickIdx = after.indexOf("onClick=");
+                let startIdx = clickIdx + 8;
+                let endIdx = startIdx;
+                let parenDepth = 0;
+                let inQ = false;
+
+                for (let i = startIdx; i < after.length; i++) {
+                    const c = after[i];
+                    if (c === '"') inQ = !inQ;
+                    if (!inQ) {
+                        if (c === '(') parenDepth++;
+                        if (c === ')') parenDepth--;
+                        if (parenDepth === 0 && (c === ' ' || i === after.length - 1)) {
+                            endIdx = (i === after.length - 1) ? i + 1 : i;
+                            break;
+                        }
                     }
                 }
 
-                const propParts = propsContent.split(/\s+/).filter(Boolean);
-                node = createButton(label, extractProps(propParts), events);
+                const fullAction = after.substring(startIdx, endIdx).trim();
+                const operations = fullAction.split(/\s*&\s*/).map(op => {
+                    const opMatch = op.match(/set\((.*?)\)/);
+                    if (opMatch) {
+                        const content = opMatch[1];
+                        // First comma outside of parens/quotes is the separator
+                        let commaIdx = -1;
+                        let d = 0;
+                        let q = false;
+                        for(let i=0; i<content.length; i++) {
+                            if(content[i] === '"') q = !q;
+                            if(!q) {
+                                if(content[i] === '(' || content[i] === '[') d++;
+                                if(content[i] === ')' || content[i] === ']') d--;
+                                if(d === 0 && content[i] === ',') {
+                                    commaIdx = i;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (commaIdx !== -1) {
+                            const target = content.substring(0, commaIdx).trim();
+                            const expression = content.substring(commaIdx + 1).trim();
+                            return { target, expression };
+                        }
+                    }
+                    return null;
+                }).filter(Boolean);
+
+                events = { click: { operations } };
+                propsContent = (after.substring(0, clickIdx) + " " + after.substring(endIdx)).trim();
             }
+
+            const propParts = tokenize(propsContent);
+            node = createButton(label, extractProps(propParts), events);
         }
 
         // -------------------------
-        // IMAGE
+        // IMAGE & VIDEO
         // -------------------------
-        else if (trimmed.startsWith("image")) {
-            const match = trimmed.match(/"(.*?)"/);
+        else if (trimmed.startsWith("image") || trimmed.startsWith("video")) {
+            const type = trimmed.startsWith("image") ? "image" : "video";
+            const rest = trimmed.replace(new RegExp(`^${type}\\s+`), "");
+            let src = "";
+            let after = "";
+            let isVariable = false;
 
-            if (match) {
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                node = createImage(match[1], extractProps(propParts));
-            }
-        }
-
-        // -------------------------
-        // 🎬 VIDEO (NEW)
-        // -------------------------
-        else if (trimmed.startsWith("video")) {
-            const match = trimmed.match(/"(.*?)"/);
-
-            if (match) {
-                const after = trimmed.slice(match.index + match[0].length).trim();
-                const propParts = after.split(" ");
-
-                node = createVideo(match[1], extractProps(propParts));
-            }
-        }
-
-        // -------------------------
-        // COLUMN
-        // -------------------------
-        else if (trimmed.startsWith("column")) {
-            const rest = trimmed.replace(/^column\s+/, "").replace(/:$/, "");
-            const allParts = rest.split(/\s+/).filter(Boolean);
-            const propParts = [];
-            let align = "start";
-
-            allParts.forEach(p => {
-                if (p.includes("=")) {
-                    const [k, v] = p.split("=");
-                    if (k === "align") align = v;
-                    propParts.push(p);
-                } else if (!p.includes('"')) {
-                    propParts.push(p);
+            if (rest.startsWith('"')) {
+                let endIdx = -1;
+                for (let i = 1; i < rest.length; i++) {
+                    if (rest[i] === '"' && rest[i-1] !== '\\') {
+                        endIdx = i;
+                        break;
+                    }
                 }
-            });
+                if (endIdx !== -1) {
+                    src = rest.substring(1, endIdx);
+                    after = rest.substring(endIdx + 1).trim();
+                }
+            } else {
+                const p = tokenize(rest);
+                src = p[0];
+                after = p.slice(1).join(" ");
+                isVariable = true;
+            }
 
-            node = createColumn([], align, extractProps(propParts));
+            const propParts = tokenize(after);
+            node = type === "image" 
+                ? createImage(src, extractProps(propParts), isVariable)
+                : createVideo(src, extractProps(propParts), isVariable);
         }
 
         // -------------------------
-        // ROW
+        // COLUMN & ROW
         // -------------------------
-        else if (trimmed.startsWith("row")) {
-            const rest = trimmed.replace(/^row\s+/, "").replace(/:$/, "");
-            const propParts = rest.split(/\s+/).filter(Boolean);
-            node = createRow([], extractProps(propParts));
-        }
+        else if (trimmed.startsWith("column") || trimmed.startsWith("row")) {
+            const type = trimmed.startsWith("column") ? "column" : "row";
+            const rest = trimmed.replace(new RegExp(`^${type}\\s+`), "").replace(/:$/, "");
+            const propParts = tokenize(rest);
+            const props = extractProps(propParts);
 
+            if (type === "column") {
+                node = createColumn([], props.align || "start", props);
+            } else {
+                node = createRow([], props);
+            }
+        }
 
         // -------------------------
         // COMPONENT USAGE
         // -------------------------
         else if (components[parts[0]]) {
-            node = createComponentNode(parts[0]);
+            const name = parts[0];
+            const propParts = parts.slice(1);
+            node = createComponentNode(name, extractProps(propParts));
         }
 
         if (!node) continue;
@@ -300,7 +401,6 @@ function parse(input) {
             }
         } else {
             const parent = stack[stack.length - 1].node;
-
             if (parent.children) {
                 parent.children.push(node);
             }
@@ -317,5 +417,8 @@ function parse(input) {
         components
     };
 }
+
+module.exports = { parse };
+
 
 module.exports = { parse };

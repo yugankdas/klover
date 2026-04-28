@@ -14,16 +14,16 @@ function createRow(children = [], props = {}) {
     return { type: "row", children, props };
 }
 
-function createImage(src, props = {}) {
-    return { type: "image", src, props };
+function createImage(src, props = {}, isVariable = false) {
+    return { type: "image", src, props, isVariable };
 }
 
-function createVideo(src, props = {}) {
-    return { type: "video", src, props };
+function createVideo(src, props = {}, isVariable = false) {
+    return { type: "video", src, props, isVariable };
 }
 
-function createComponentNode(name) {
-    return { type: "component", name };
+function createComponentNode(name, props = {}) {
+    return { type: "component", name, props };
 }
 
 function createState(key, value) {

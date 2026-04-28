@@ -1,35 +1,230 @@
-# Klover (V7: The DX Update)
+# 🚀 Klover
 
-Klover is a high-performance UI system that combines a state-aware DSL with professional-grade developer tools. V7 introduces a unified CLI and live-reloading to streamline the development workflow.
+Klover is a lightweight domain-specific language (DSL) for building UI using simple, readable `.kv` files.
+It compiles your code into clean HTML with built-in layout, styling, and state handling.
 
-## Core DX Features (V7)
+---
 
-- **Unified CLI**: New `klover` command for builds, debugging, and development.
-- **Watch Mode**: Live-reloading via `klover dev` keeps your UI in sync with your code.
-- **Improved Error Handling**: Clearer console feedback for faster debugging.
-- **Modular Pipeline**: Reusable build engine for advanced integrations.
+## ✨ Why Klover?
 
-## Getting Started
+* 🧠 **Declarative UI** — write *what* you want, not how to structure HTML
+* ⚡ **Fast iteration** — minimal syntax, instant results
+* 🎨 **Built-in layout system** — column, row, alignment out of the box
+* 🔁 **Reactive state** — simple state + events
+* 🧩 **Extensible architecture** — plugin-ready
 
-1.  **Define your UI** (`input.kv`):
-    ```kv
-    state count = 0
-    column center:
-        text count
-        button "Increase" onClick=set(count, count + 1)
-    ```
-2.  **Run Dev Mode**:
-    ```bash
-    npm run dev
-    ```
-    *Note: `npm run dev` is a shortcut for `node cli/index.js dev`.*
-3.  **Hot Reload**: Every time you save `input.kv`, your `output.html` will automatically update.
+---
 
-## Architecture
+## 📦 Installation
 
-- **CLI**: The command-line interface and watcher.
-- **Parser**: Translates DSL to semantic AST.
-- **Runtime**: Manages logic, scoping, and state.
-- **Renderer**: Transforms data to UI (Teammate-managed).
+```bash
+npm install -g klover
+```
 
-For full technical specifications, see [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md).
+---
+
+## 🚀 Usage
+
+### Build UI
+
+```bash
+klover build yourfile.kv
+```
+
+Generates:
+
+```text
+output.html
+```
+
+---
+
+### Run a file
+
+```bash
+klover run app.kv
+```
+
+---
+
+### Dev mode (auto rebuild)
+
+```bash
+klover dev
+```
+
+---
+
+### Debug mode
+
+```bash
+klover debug --no-render
+```
+
+---
+
+## 🧾 Example
+
+```klover
+theme dark
+
+state count = 0
+
+column center:
+    text "Welcome to Klover" heading
+
+    button "Increase" primary onClick=set(count + 1)
+    text count
+```
+
+---
+
+## 🧠 Core Concepts
+
+### Layout
+
+```klover
+column:
+    text "Top"
+
+    row:
+        text "Left"
+        text "Right"
+```
+
+---
+
+### State
+
+```klover
+state count = 0
+```
+
+---
+
+### Events
+
+```klover
+button "Increase" onClick=set(count + 1)
+```
+
+---
+
+### Dynamic Values
+
+```klover
+text count
+```
+
+---
+
+### Media
+
+```klover
+image "image.png"
+video "demo.mp4" controls autoplay
+```
+
+---
+
+## 🧩 Features
+
+* ✅ Text, button, image, video components
+* ✅ Column & row layout system
+* ✅ State management
+* ✅ Event handling (`onClick`)
+* ✅ Conditional rendering (`if`)
+* ✅ Lists (`repeat`)
+* 🚧 Plugin system (in progress)
+* 🚧 Rendering optimizations (in progress)
+
+---
+
+## 🎨 VS Code Extension
+
+Klover includes a syntax highlighting extension located in:
+
+```text
+klover-vscode/
+```
+
+### Features
+
+* Syntax highlighting for `.kv` files
+* Language recognition
+* Custom file icons
+
+---
+
+### Install Extension
+
+You can:
+
+* Install from the VS Code Marketplace (search **Klover**)
+* OR manually install the `.vsix` file from the `klover-vscode` directory
+
+---
+
+### Enable File Icons
+
+File icons require manual activation:
+
+1. Open Command Palette (`Ctrl + Shift + P`)
+2. Search: **File Icon Theme**
+3. Select: **Klover Icons**
+
+---
+
+## 🏗 Project Structure
+
+```text
+klover/
+├── cli/            # CLI interface
+├── parser/         # Robust DSL parser
+├── runtime/        # State + V9 execution
+├── renderer/       # HTML generation
+├── shared/         # Node schema
+├── plugins/        # Extension system
+├── index.js        # Build pipeline
+```
+
+---
+
+## 🧪 Development
+
+Run locally:
+
+```bash
+node cli/index.js build
+```
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+## 👤 Author
+
+Bhumi Jha
+
+Yugank Das 
+
+---
+
+## 🚀 Status
+
+Klover is under active development.
+
+* ✅ **Robust Parser**: Supports complex expressions and nested parentheses.
+* ✅ **V9 Runtime**: Surgical DOM patching for fast reactive updates.
+* ✅ **Component Scope**: Full support for props and nested variable resolution.
+* ✅ **VS Code Support**: Syntax highlighting and custom icons available.
+
+---
+
+## 💡 Vision
+
+Klover aims to provide a simple, expressive way to build UI without the complexity of traditional frameworks.

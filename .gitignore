@@ -1,1 +1,10 @@
 PROJECT_CONTEXT.md
+node_modules/
+output.html
+debug.json
+*.tgz
+*.kv
+!showcase.kv
+.DS_Store
+*.log
+klover
