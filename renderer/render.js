@@ -1,4 +1,4 @@
-// renderer/render.js - V8 Diff-Ready Renderer (FIXED)
+// renderer/render.js - V9 Class-Based Renderer
 
 // Helper: Escape HTML to prevent XSS attacks
 function escapeHtml(str) {
@@ -11,131 +11,91 @@ function escapeHtml(str) {
         .replace(/'/g, "&#39;");
 }
 
-// Helper: Convert props to CSS classes and styles
-function applyProps(node, theme = {}) {
-    // FIX: Check if node exists and has props
-    if (!node) return { class: "", style: "" };
-    if (!node.props) return { class: "", style: "" };
-
+// Helper: Build class list from node props
+function buildClasses(node) {
+    if (!node || !node.props) return [];
+    const classes = [];
     const props = node.props;
-    let classes = [];
-    let styles = [];
 
-    // Size mapping
-    const sizeMap = {
-        xs: "text-xs", sm: "text-sm", md: "text-base",
-        lg: "text-lg", xl: "text-xl", "2xl": "text-2xl",
-        "3xl": "text-3xl", "4xl": "text-4xl"
-    };
+    if (props.primary === true || props.primary === "true") classes.push("kv-primary");
+    if (props.danger === true || props.danger === "true") classes.push("kv-danger");
+    
+    // Support custom classes from props
+    if (props.class) classes.push(props.class);
+    if (props.className) classes.push(props.className);
 
-    // Weight mapping
-    const weightMap = {
-        normal: "font-normal", medium: "font-medium",
-        semibold: "font-semibold", bold: "font-bold",
-        extrabold: "font-extrabold"
-    };
+    return classes;
+}
 
-    // Apply size
-    if (props.size && sizeMap[props.size]) {
-        classes.push(sizeMap[props.size]);
-    }
-
-    // Apply weight
-    if (props.weight && weightMap[props.weight]) {
-        classes.push(weightMap[props.weight]);
-    }
-
-    // Apply primary button styling
-    if (props.primary === true || props.primary === "true") {
-        classes.push("btn-primary");
-        classes.push("px-4", "py-2", "rounded-lg", "cursor-pointer");
-    }
-
-    // Apply danger button styling
-    if (props.danger === true || props.danger === "true") {
-        classes.push("btn-danger");
-    }
-
-    // Apply gap for flex containers
-    if (props.gap !== undefined) {
-        styles.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
-    }
-
-    // Apply theme colors
-    if (theme && theme.primary && !props.primary) {
-        classes.push(`text-[${theme.primary}]`);
-    }
-
-    return {
-        class: classes.length ? ` class="${classes.join(' ')}"` : "",
-        style: styles.length ? ` style="${styles.join('; ')}"` : ""
-    };
+// Helper: Build gap style (only inline style we allow — gap is layout-specific)
+function buildGapStyle(node) {
+    if (!node || !node.props || node.props.gap === undefined) return "";
+    const gap = typeof node.props.gap === "number" ? node.props.gap + "px" : node.props.gap;
+    return ` style="gap:${gap}"`;
 }
 
 // Main render function - converts node to HTML string
-// Main render function - converts node to HTML string
-function renderNode(node, runtime, theme = {}, path = "") {
+function renderNode(node, runtime, theme, path) {
     if (!node) return "";
 
     const pathAttr = path ? ` data-kv-path="${path}"` : "";
 
-    // --------------------------------------------
     // TEXT NODE
-    // --------------------------------------------
     if (node.type === "text") {
-        const attrs = applyProps(node, theme);
         const value = escapeHtml(node.value !== undefined ? node.value : "");
-        return `<p${pathAttr}${attrs.class}${attrs.style}>${value}</p>`;
+        const variant = node.variant || "body";
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-text", ...extraClasses].join(" ").trim();
+        
+        if (variant === "h1") return `<h1${pathAttr} class="${allClasses} h1">${value}</h1>`;
+        if (variant === "h2") return `<h2${pathAttr} class="${allClasses} h2">${value}</h2>`;
+        if (variant === "h3") return `<h3${pathAttr} class="${allClasses} h3">${value}</h3>`;
+        if (variant === "h4") return `<h4${pathAttr} class="${allClasses} h4">${value}</h4>`;
+        if (variant === "heading") return `<h1${pathAttr} class="${allClasses} heading">${value}</h1>`;
+        if (variant === "subheading") return `<p${pathAttr} class="${allClasses} subheading">${value}</p>`;
+        
+        return `<p${pathAttr} class="${allClasses}">${value}</p>`;
     }
 
-    // --------------------------------------------
     // BUTTON NODE
-    // --------------------------------------------
     if (node.type === "button") {
-        const attrs = applyProps(node, theme);
         const label = escapeHtml(node.label || "Button");
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-button", ...extraClasses].join(" ").trim();
 
         let onclick = "";
-        if (node.events?.click?.operations) {
-            const ops = JSON.stringify(node.events.click.operations).replace(/"/g, '&quot;');
-            const scope = JSON.stringify(node._scope || {}).replace(/"/g, '&quot;');
-            onclick = ` onclick="window.__klover_executeOperations('${ops}', '${scope}')"`;
+        if (node.events?.click) {
+            onclick = ` onclick="window.__klover_executeEvent('${path}', 'click')"`;
         }
 
-        return `<button${pathAttr}${attrs.class}${attrs.style}${onclick}>${label}</button>`;
+        return `<button${pathAttr} class="${allClasses}"${onclick}>${label}</button>`;
     }
 
-    // --------------------------------------------
     // VIDEO NODE
-    // --------------------------------------------
     if (node.type === "video") {
-        const attrs = applyProps(node, theme);
         const src = escapeHtml(node.src || "");
-
         let videoAttrs = ` src="${src}"`;
         if (node.props?.controls) videoAttrs += " controls";
         if (node.props?.autoplay) videoAttrs += " autoplay";
         if (node.props?.loop) videoAttrs += " loop";
         if (node.props?.muted) videoAttrs += " muted";
-
-        return `<video${pathAttr}${videoAttrs}${attrs.class}${attrs.style}></video>`;
+        return `<video${pathAttr} class="kv-video"${videoAttrs}></video>`;
     }
 
-    // --------------------------------------------
     // IMAGE NODE
-    // --------------------------------------------
     if (node.type === "image") {
-        const attrs = applyProps(node, theme);
         const src = escapeHtml(node.src || "");
-        return `<img${pathAttr} src="${src}"${attrs.class}${attrs.style} />`;
+        const alt = escapeHtml(node.props?.alt || "");
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-image", ...extraClasses].join(" ").trim();
+        return `<img${pathAttr} class="${allClasses}" src="${src}" alt="${alt}" />`;
     }
 
-    // --------------------------------------------
-    // FLEX CONTAINERS
-    // --------------------------------------------
+    // COLUMN & ROW
     if (node.type === "column" || node.type === "row") {
-        const attrs = applyProps(node, theme);
         const isColumn = node.type === "column";
+        const baseClass = isColumn ? "kv-column" : "kv-row";
+        const gapStyle = buildGapStyle(node);
 
         let childrenHtml = "";
         if (node.children && Array.isArray(node.children)) {
@@ -145,18 +105,10 @@ function renderNode(node, runtime, theme = {}, path = "") {
             }).join("");
         }
 
-        const baseStyle = isColumn 
-            ? "display:flex;flex-direction:column;align-items:center;" 
-            : "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
-        
-        const existingStyle = attrs.style ? attrs.style.replace('style="', '').replace('"', '') : '';
-
-        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${childrenHtml}</div>`;
+        return `<div${pathAttr} class="${baseClass}"${gapStyle}>${childrenHtml}</div>`;
     }
 
-    // --------------------------------------------
-    // FRAGMENT NODE (No wrapper, just children)
-    // --------------------------------------------
+    // FRAGMENT NODE
     if (node.type === "fragment") {
         if (node.children && Array.isArray(node.children)) {
             return node.children.map((child, i) => {
@@ -170,33 +122,25 @@ function renderNode(node, runtime, theme = {}, path = "") {
     return "";
 }
 
-// V8 Diff-Ready Render Function
+// Entry point
 function render(node, options = {}) {
     const { runtime, theme = {} } = options;
 
     if (!runtime) {
-        console.error("❌ No runtime provided to renderer");
+        console.error("No runtime provided to renderer");
         return "<div>Error: No runtime provided</div>";
     }
 
-    // If node is the raw AST, we must resolve it.
-    // If it's already resolved (has results of evaluate/repeat), we just render it.
     let resolvedTree = node;
-    
-    // We detect if it's resolved by checking for common resolved properties
-    // or we just trust the caller. In Klover V9, build engine resolves first.
-    // But for safety, if it's the raw AST root (type generic/column with isVariable somewhere),
-    // we might need to resolve.
-    // Optimization: resolveTree() is safe to call multiple times in Runtime V8.
     if (runtime.currentTree === null || node === runtime.ast) {
         resolvedTree = runtime.resolveTree();
     }
 
     const html = renderNode(resolvedTree, runtime, theme, "");
-    return `<div class="klover-app">${html || ""}</div>`;
+    return `<div class="kv-app">${html || ""}</div>`;
 }
 
 // Export functions
 if (typeof module !== "undefined") {
-    module.exports = { render, renderNode, applyProps, escapeHtml };
+    module.exports = { render, renderNode, escapeHtml };
 }

@@ -47,19 +47,19 @@ else if (command === "run") {
 else if (command === "dev") {
     const file = getFileArg();
 
-    console.log(`👀 Watching ${file}...`);
+    console.log(`Watching ${file}...`);
     console.log(`Debug: ${options.debug} | NoRender: ${options.noRender}`);
 
     runBuild(file);
 
     chokidar.watch(file).on("change", () => {
-        console.log("🔁 Rebuilding...");
+        console.log("Rebuilding...");
         runBuild(file);
     });
 }
 
 // ------------------
-// DEBUG (🔥 FIXED)
+// DEBUG
 // ------------------
 else if (command === "debug") {
     runBuild(getFileArg());

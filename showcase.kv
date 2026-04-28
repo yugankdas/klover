@@ -1,0 +1,89 @@
+theme dark
+title "Klover V9 — Premium UI Engine"
+icon "https://klover.dev/favicon.ico"
+
+state count = 0
+state likes = 42
+state showAbout = false
+state darkMode = true
+state tasks = [{"name":"Ship V9 Engine","done":true},{"name":"Responsive Layouts","done":true},{"name":"Heading System","done":true},{"name":"Publish to NPM","done":false}]
+
+column:
+
+    row:
+        column:
+            text "Klover" h1
+            text "The UI language that thinks in layouts, not divs." subheading
+
+        row:
+            button "Star ⭐" primary onClick=set(likes, likes + 1)
+            button "About" onClick=set(showAbout, !showAbout)
+
+    if showAbout:
+        column:
+            text "What is Klover?" h2
+            text "Klover is a lightweight DSL that compiles .kv files into responsive, reactive HTML — no frameworks, no boilerplate. Write what you mean, get what you want."
+            button "Close" danger onClick=set(showAbout, false)
+
+    text "Core Features" h2
+
+    row:
+        column:
+            text "⚡" h1
+            text "Instant Builds" h3
+            text "Compile .kv to production HTML in milliseconds. Zero config, zero wait."
+
+        column:
+            text "📐" h1
+            text "Auto Responsive" h3
+            text "Rows wrap. Columns stack. Typography scales. No media queries needed."
+
+        column:
+            text "🧠" h1
+            text "Reactive State" h3
+            text "Built-in state management with surgical DOM patching. No virtual DOM."
+
+        column:
+            text "🎨" h1
+            text "Premium Defaults" h3
+            text "Glassmorphism, Inter font, and dark mode out of the box."
+
+    text "Interactive Demo" h2
+    text "Try clicking the buttons below — state updates are live." subheading
+
+    row:
+        column:
+            text "Counter" h3
+            text count h1
+            row:
+                button "Increment" primary onClick=set(count, count + 1)
+                button "Reset" danger onClick=set(count, 0)
+
+        column:
+            text "Community" h3
+            text likes h1
+            text "stars on the project" subheading
+            button "Add Star ⭐" primary onClick=set(likes, likes + 1)
+
+    text "Roadmap" h2
+
+    repeat tasks:
+        row:
+            text item.name h4
+            if item.done:
+                text "✅ Done"
+            if !item.done:
+                text "🚧 In Progress"
+
+    row:
+        column:
+            text "Built by" h4
+            text "Bhumi Jha & Yugank Das"
+
+        column:
+            text "Version" h4
+            text "Klover V9 — Published on NPM"
+
+        column:
+            text "License" h4
+            text "MIT — Free and Open Source"

@@ -1,21 +1,25 @@
-# 🚀 Klover
+# Klover
 
-Klover is a lightweight domain-specific language (DSL) for building UI using simple, readable `.kv` files.
+Klover is a lightweight domain-specific language (DSL) for building UI using simple, readable .kv files.
 It compiles your code into clean HTML with built-in layout, styling, and state handling.
 
----
-
-## ✨ Why Klover?
-
-* 🧠 **Declarative UI** — write *what* you want, not how to structure HTML
-* ⚡ **Fast iteration** — minimal syntax, instant results
-* 🎨 **Built-in layout system** — column, row, alignment out of the box
-* 🔁 **Reactive state** — simple state + events
-* 🧩 **Extensible architecture** — plugin-ready
+[**Read the Comprehensive Language Guide**](docs/language_guide.md)
 
 ---
 
-## 📦 Installation
+## Why Klover?
+
+* Declarative UI - write what you want, not how to structure HTML
+* Fast iteration - minimal syntax, instant results
+* Auto-Responsive Layout - column, row, and auto-wrapping grid out of the box
+* Mobile Optimized - automatic stacking and typography scaling for small screens
+* Semantic Typography - built-in heading variants (h1-h4, heading, subheading)
+* Reactive State - simple state + events with live updates
+* Extensible architecture - plugin-ready
+
+---
+
+## Installation
 
 ```bash
 npm install -g klover
@@ -23,7 +27,7 @@ npm install -g klover
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### Build UI
 
@@ -63,23 +67,29 @@ klover debug --no-render
 
 ---
 
-## 🧾 Example
+## Example
 
 ```klover
 theme dark
+title "My Premium App"
+icon "favicon.ico"
 
 state count = 0
 
 column center:
-    text "Welcome to Klover" heading
+    text "Welcome to Klover" h1
+    text "The UI language for hackers." subheading
 
-    button "Increase" primary onClick=set(count + 1)
-    text count
+    row:
+        button "Decrease" onClick=set(count, count - 1)
+        button "Increase" primary onClick=set(count, count + 1)
+    
+    text count h1
 ```
 
 ---
 
-## 🧠 Core Concepts
+## Core Concepts
 
 ### Layout
 
@@ -127,20 +137,21 @@ video "demo.mp4" controls autoplay
 
 ---
 
-## 🧩 Features
+## Features
 
-* ✅ Text, button, image, video components
-* ✅ Column & row layout system
-* ✅ State management
-* ✅ Event handling (`onClick`)
-* ✅ Conditional rendering (`if`)
-* ✅ Lists (`repeat`)
-* 🚧 Plugin system (in progress)
-* 🚧 Rendering optimizations (in progress)
+* Text, button, image, video components
+* Column & row layout system
+* State management
+* Event handling (onClick)
+* Conditional rendering (if)
+* Lists (repeat ... as ...)
+* Custom Page Title & Icon (title, icon)
+* Plugin system (in progress)
+* Rendering optimizations (in progress)
 
 ---
 
-## 🎨 VS Code Extension
+## VS Code Extension
 
 Klover includes a syntax highlighting extension located in:
 
@@ -150,7 +161,7 @@ klover-vscode/
 
 ### Features
 
-* Syntax highlighting for `.kv` files
+* Syntax highlighting for .kv files
 * Language recognition
 * Custom file icons
 
@@ -160,8 +171,8 @@ klover-vscode/
 
 You can:
 
-* Install from the VS Code Marketplace (search **Klover**)
-* OR manually install the `.vsix` file from the `klover-vscode` directory
+* Install from the VS Code Marketplace (search Klover)
+* OR manually install the .vsix file from the klover-vscode directory
 
 ---
 
@@ -169,13 +180,13 @@ You can:
 
 File icons require manual activation:
 
-1. Open Command Palette (`Ctrl + Shift + P`)
-2. Search: **File Icon Theme**
-3. Select: **Klover Icons**
+1. Open Command Palette (Ctrl + Shift + P)
+2. Search: File Icon Theme
+3. Select: Klover Icons
 
 ---
 
-## 🏗 Project Structure
+## Project Structure
 
 ```text
 klover/
@@ -190,7 +201,7 @@ klover/
 
 ---
 
-## 🧪 Development
+## Development
 
 Run locally:
 
@@ -200,13 +211,13 @@ node cli/index.js build
 
 ---
 
-## 📄 License
+## License
 
 MIT License
 
 ---
 
-## 👤 Author
+## Author
 
 Bhumi Jha
 
@@ -214,17 +225,18 @@ Yugank Das
 
 ---
 
-## 🚀 Status
+## Status
 
 Klover is under active development.
 
-* ✅ **Robust Parser**: Supports complex expressions and nested parentheses.
-* ✅ **V9 Runtime**: Surgical DOM patching for fast reactive updates.
-* ✅ **Component Scope**: Full support for props and nested variable resolution.
-* ✅ **VS Code Support**: Syntax highlighting and custom icons available.
+* Robust Parser: Supports complex expressions, nested parentheses, and semantic keywords.
+* V9 Responsive Engine: Class-based CSS with auto-layout, breakpoints, and flex-wrapping.
+* Semantic Typography: Full heading hierarchy (h1-h4, heading, subheading) built-in.
+* Reactive Live State: Full re-render cycle with state persistence across updates.
+* VS Code Support: Enhanced syntax highlighting and custom icons available.
 
 ---
 
-## 💡 Vision
+## Vision
 
 Klover aims to provide a simple, expressive way to build UI without the complexity of traditional frameworks.

@@ -1,5 +1,5 @@
-function createText(value, isVariable = false, props = {}) {
-    return { type: "text", value, isVariable, props };
+function createText(value, isVariable = false, props = {}, variant = "body") {
+    return { type: "text", value, isVariable, props, variant };
 }
 
 function createButton(label, props = {}, events = null) {
