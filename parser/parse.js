@@ -114,6 +114,8 @@ function parse(input) {
     const components = {};
 
     let theme = null;
+    let title = null;
+    let icon = null;
     let currentComponent = null;
 
     for (let line of lines) {
@@ -128,6 +130,16 @@ function parse(input) {
         // -------------------------
         if (trimmed.startsWith("theme")) {
             theme = parts[1] || null;
+            continue;
+        }
+
+        if (trimmed.startsWith("title")) {
+            title = trimmed.replace(/^title\s+/, "").replace(/"/g, "").trim();
+            continue;
+        }
+
+        if (trimmed.startsWith("icon") || trimmed.startsWith("favicon")) {
+            icon = trimmed.replace(/^(icon|favicon)\s+/, "").replace(/"/g, "").trim();
             continue;
         }
 
@@ -200,6 +212,7 @@ function parse(input) {
         // -------------------------
         else if (trimmed.startsWith("text")) {
             const rest = trimmed.replace(/^text\s+/, "");
+            const VARIANTS = ["h1", "h2", "h3", "h4", "subheading", "heading"];
             
             if (rest.startsWith('"')) {
                 // Find matching end quote
@@ -214,8 +227,19 @@ function parse(input) {
                 if (endIdx !== -1) {
                     const content = rest.substring(1, endIdx);
                     const after = rest.substring(endIdx + 1).trim();
-                    const propParts = tokenize(after);
-                    node = createText(content, false, extractProps(propParts));
+                    const allParts = tokenize(after);
+                    
+                    let variant = "body";
+                    const propParts = [];
+                    allParts.forEach(p => {
+                        if (VARIANTS.includes(p)) {
+                            variant = p;
+                        } else {
+                            propParts.push(p);
+                        }
+                    });
+                    
+                    node = createText(content, false, extractProps(propParts), variant);
                 }
             } else {
                 // Expression or variable
@@ -223,17 +247,20 @@ function parse(input) {
                 const contentParts = [];
                 const propParts = [];
                 const validFlags = ["primary", "controls", "autoplay", "muted", "loop", "danger"];
+                let variant = "body";
 
                 allParts.forEach(p => {
-                    if (p.includes("=") || validFlags.includes(p)) {
-                        propParts.push(p);
+                    if (VARIANTS.includes(p)) {
+                        variant = p; // Found a variant keyword
+                    } else if (p.includes("=") || validFlags.includes(p)) {
+                        propParts.push(p); // It's a property
                     } else {
-                        contentParts.push(p);
+                        contentParts.push(p); // It's part of the expression
                     }
                 });
 
-                const expression = contentParts.join(" ");
-                node = createText(expression, true, extractProps(propParts));
+                const expression = contentParts.join(" ").trim();
+                node = createText(expression, true, extractProps(propParts), variant);
             }
         }
 
@@ -414,11 +441,10 @@ function parse(input) {
     return {
         tree,
         theme,
+        title,
+        icon,
         components
     };
 }
-
-module.exports = { parse };
-
 
 module.exports = { parse };

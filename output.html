@@ -1,117 +1,235 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App - test.kv</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: {
-                            DEFAULT: '#3b82f6',
-                            hover: '#2563eb',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klover V9 — Premium UI Engine</title>
+    <link rel="icon" href="https://klover.dev/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ===== RESET ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ===== BASE ===== */
         :root {
             --primary: #3b82f6;
-            --primary-dark: #2563eb;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
             --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --surface: rgba(15, 23, 42, 0.8);
+            --border: rgba(255, 255, 255, 0.08);
             --text: #f8fafc;
             --text-muted: #94a3b8;
+            --radius: 12px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
         }
-        body { 
-            background: radial-gradient(circle at top left, #1e293b, #0f172a);
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+
+        body {
+            background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
             min-height: 100vh;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            font-family: var(--font);
             color: var(--text);
+            margin: 0;
             overflow-x: hidden;
         }
-        .klover-app { 
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2rem; 
-            padding: 3rem; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            min-width: 500px;
-            max-width: 95%;
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+        /* Ambient Glow */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -10%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+
+        /* ===== APP CONTAINER ===== */
+        .kv-app {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 48px;
+            background: var(--surface);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            animation: kvFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes kvFadeIn {
+            from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        p { margin-bottom: 0.5rem; line-height: 1.5; }
-        button { 
+
+        /* ===== TYPOGRAPHY ===== */
+        .kv-text {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .kv-text.h1 {
+            font-size: 40px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .kv-text.h2 {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.015em;
+        }
+
+        .kv-text.h3 {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .kv-text.h4 {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .kv-text.heading {
+            font-size: 40px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .kv-text.subheading {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ===== LAYOUT ===== */
+        .kv-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .kv-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .kv-row > * {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        /* ===== BUTTON ===== */
+        .kv-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.6rem 1.2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.875rem;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.03em;
         }
-        button:hover { 
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        button:active { transform: translateY(0); }
-        
-        .btn-primary {
-            background: var(--primary) !important;
-            border: none !important;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark) !important;
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.23);
-        }
-        
-        .btn-danger {
-            background: #ef4444 !important;
-            border: none !important;
-        }
-        .btn-danger:hover { background: #dc2626 !important; }
 
-        img {
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+        .kv-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        img:hover { transform: scale(1.02); }
 
+        .kv-button:active {
+            transform: translateY(0);
+        }
+
+        .kv-button.kv-primary {
+            background: var(--primary);
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+
+        .kv-button.kv-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .kv-button.kv-danger {
+            background: var(--danger);
+            border-color: transparent;
+        }
+
+        .kv-button.kv-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        /* ===== IMAGE ===== */
+        .kv-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+            object-fit: cover;
+        }
+
+        /* ===== VIDEO ===== */
+        .kv-video {
+            width: 100%;
+            max-width: 100%;
+            border-radius: var(--radius);
+        }
+
+        /* ===== TRANSITIONS ===== */
         [data-kv-path] {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+
+            .kv-app { padding: 24px; border-radius: 16px; }
+
+            .kv-row { flex-direction: column; }
+            .kv-row > * { min-width: 100%; }
+
+            .kv-text.h1, .kv-text.heading { font-size: 28px; }
+            .kv-text.h2 { font-size: 24px; }
+            .kv-text.h3 { font-size: 20px; }
+            .kv-text.h4 { font-size: 17px; }
+            .kv-text.subheading { font-size: 16px; }
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <div class="klover-app"><div style="display:flex;flex-direction:column;align-items:center;"><p data-kv-path="children[0]">Hello Klover-CLI</p></div></div>
+        <div class="kv-app"><div class="kv-column"><div data-kv-path="children[0]" class="kv-column"><div data-kv-path="children[0].children[0]" class="kv-row"><div data-kv-path="children[0].children[0].children[0]" class="kv-column"><h1 data-kv-path="children[0].children[0].children[0].children[0]" class="kv-text h1">Klover</h1><p data-kv-path="children[0].children[0].children[0].children[1]" class="kv-text subheading">The UI language that thinks in layouts, not divs.</p></div><div data-kv-path="children[0].children[0].children[1]" class="kv-row"><button data-kv-path="children[0].children[0].children[1].children[0]" class="kv-button kv-primary" onclick="window.__klover_executeEvent('children[0].children[0].children[1].children[0]', 'click')">Star ⭐</button><button data-kv-path="children[0].children[0].children[1].children[1]" class="kv-button" onclick="window.__klover_executeEvent('children[0].children[0].children[1].children[1]', 'click')">About</button></div></div><h2 data-kv-path="children[0].children[1]" class="kv-text h2">Core Features</h2><div data-kv-path="children[0].children[2]" class="kv-row"><div data-kv-path="children[0].children[2].children[0]" class="kv-column"><h1 data-kv-path="children[0].children[2].children[0].children[0]" class="kv-text h1">⚡</h1><h3 data-kv-path="children[0].children[2].children[0].children[1]" class="kv-text h3">Instant Builds</h3><p data-kv-path="children[0].children[2].children[0].children[2]" class="kv-text">Compile .kv to production HTML in milliseconds. Zero config, zero wait.</p></div><div data-kv-path="children[0].children[2].children[1]" class="kv-column"><h1 data-kv-path="children[0].children[2].children[1].children[0]" class="kv-text h1">📐</h1><h3 data-kv-path="children[0].children[2].children[1].children[1]" class="kv-text h3">Auto Responsive</h3><p data-kv-path="children[0].children[2].children[1].children[2]" class="kv-text">Rows wrap. Columns stack. Typography scales. No media queries needed.</p></div><div data-kv-path="children[0].children[2].children[2]" class="kv-column"><h1 data-kv-path="children[0].children[2].children[2].children[0]" class="kv-text h1">🧠</h1><h3 data-kv-path="children[0].children[2].children[2].children[1]" class="kv-text h3">Reactive State</h3><p data-kv-path="children[0].children[2].children[2].children[2]" class="kv-text">Built-in state management with surgical DOM patching. No virtual DOM.</p></div><div data-kv-path="children[0].children[2].children[3]" class="kv-column"><h1 data-kv-path="children[0].children[2].children[3].children[0]" class="kv-text h1">🎨</h1><h3 data-kv-path="children[0].children[2].children[3].children[1]" class="kv-text h3">Premium Defaults</h3><p data-kv-path="children[0].children[2].children[3].children[2]" class="kv-text">Glassmorphism, Inter font, and dark mode out of the box.</p></div></div><h2 data-kv-path="children[0].children[3]" class="kv-text h2">Interactive Demo</h2><p data-kv-path="children[0].children[4]" class="kv-text subheading">Try clicking the buttons below — state updates are live.</p><div data-kv-path="children[0].children[5]" class="kv-row"><div data-kv-path="children[0].children[5].children[0]" class="kv-column"><h3 data-kv-path="children[0].children[5].children[0].children[0]" class="kv-text h3">Counter</h3><h1 data-kv-path="children[0].children[5].children[0].children[1]" class="kv-text h1">0</h1><div data-kv-path="children[0].children[5].children[0].children[2]" class="kv-row"><button data-kv-path="children[0].children[5].children[0].children[2].children[0]" class="kv-button kv-primary" onclick="window.__klover_executeEvent('children[0].children[5].children[0].children[2].children[0]', 'click')">Increment</button><button data-kv-path="children[0].children[5].children[0].children[2].children[1]" class="kv-button kv-danger" onclick="window.__klover_executeEvent('children[0].children[5].children[0].children[2].children[1]', 'click')">Reset</button></div></div><div data-kv-path="children[0].children[5].children[1]" class="kv-column"><h3 data-kv-path="children[0].children[5].children[1].children[0]" class="kv-text h3">Community</h3><h1 data-kv-path="children[0].children[5].children[1].children[1]" class="kv-text h1">42</h1><p data-kv-path="children[0].children[5].children[1].children[2]" class="kv-text subheading">stars on the project</p><button data-kv-path="children[0].children[5].children[1].children[3]" class="kv-button kv-primary" onclick="window.__klover_executeEvent('children[0].children[5].children[1].children[3]', 'click')">Add Star ⭐</button></div></div><h2 data-kv-path="children[0].children[6]" class="kv-text h2">Roadmap</h2><div data-kv-path="children[0].children[7].children[0]" class="kv-row"><h4 data-kv-path="children[0].children[7].children[0].children[0]" class="kv-text h4">Ship V9 Engine</h4><p data-kv-path="children[0].children[7].children[0].children[1].children[0]" class="kv-text">✅ Done</p></div><div data-kv-path="children[0].children[7].children[1]" class="kv-row"><h4 data-kv-path="children[0].children[7].children[1].children[0]" class="kv-text h4">Responsive Layouts</h4><p data-kv-path="children[0].children[7].children[1].children[1].children[0]" class="kv-text">✅ Done</p></div><div data-kv-path="children[0].children[7].children[2]" class="kv-row"><h4 data-kv-path="children[0].children[7].children[2].children[0]" class="kv-text h4">Heading System</h4><p data-kv-path="children[0].children[7].children[2].children[1].children[0]" class="kv-text">✅ Done</p></div><div data-kv-path="children[0].children[7].children[3]" class="kv-row"><h4 data-kv-path="children[0].children[7].children[3].children[0]" class="kv-text h4">Publish to NPM</h4><p data-kv-path="children[0].children[7].children[3].children[1].children[0]" class="kv-text">🚧 In Progress</p></div><div data-kv-path="children[0].children[8]" class="kv-row"><div data-kv-path="children[0].children[8].children[0]" class="kv-column"><h4 data-kv-path="children[0].children[8].children[0].children[0]" class="kv-text h4">Built by</h4><p data-kv-path="children[0].children[8].children[0].children[1]" class="kv-text">Bhumi Jha &amp; Yugank Das</p></div><div data-kv-path="children[0].children[8].children[1]" class="kv-column"><h4 data-kv-path="children[0].children[8].children[1].children[0]" class="kv-text h4">Version</h4><p data-kv-path="children[0].children[8].children[1].children[1]" class="kv-text">Klover V9 — Published on NPM</p></div><div data-kv-path="children[0].children[8].children[2]" class="kv-column"><h4 data-kv-path="children[0].children[8].children[2].children[0]" class="kv-text h4">License</h4><p data-kv-path="children[0].children[8].children[2].children[1]" class="kv-text">MIT — Free and Open Source</p></div></div></div></div></div>
     </div>
 
     <script>
@@ -220,7 +338,7 @@ class Runtime {
             } else {
                 this.state[actualTarget] = newValue;
             }
-            console.log(`🔄 State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
+            console.log(`State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
         }
 
         if (this.onRender) {
@@ -258,7 +376,7 @@ class Runtime {
                     } else {
                         this.state[cleanTarget] = newValue;
                     }
-                    console.log(`🔄 Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
+                    console.log(`Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
                     changed = true;
                 }
             }
@@ -450,6 +568,41 @@ class Runtime {
 
 
     // -------------------------
+    // EVENT EXECUTION (Path-Based)
+    // -------------------------
+    getNodeByPath(path, tree = this.currentTree) {
+        if (!path || !tree) return tree;
+        
+        const parts = path.split(/[.\[\]]+/).filter(Boolean);
+        let current = tree;
+
+        for (const part of parts) {
+            if (!current) return null;
+            if (part === "children" || part === "root") continue;
+            
+            if (current.children && !isNaN(part)) {
+                current = current.children[parseInt(part)];
+            } else if (current[part]) {
+                current = current[part];
+            } else {
+                return null;
+            }
+        }
+        return current;
+    }
+
+    executeEvent(path, eventType) {
+        const node = this.getNodeByPath(path);
+        if (!node || !node.events || !node.events[eventType]) return;
+
+        const { operations } = node.events[eventType];
+        const scope = node._scope || {};
+        
+        console.log(`⚡ Executing ${eventType} event at path: ${path}`);
+        this.executeOperations(operations, scope);
+    }
+
+    // -------------------------
     // HELPER: Get current state
     // -------------------------
     getState() {
@@ -492,7 +645,7 @@ class Runtime {
 
                 
                 // 2. Renderer
-                // renderer/render.js - V8 Diff-Ready Renderer (FIXED)
+                // renderer/render.js - V9 Class-Based Renderer
 
 // Helper: Escape HTML to prevent XSS attacks
 function escapeHtml(str) {
@@ -505,131 +658,91 @@ function escapeHtml(str) {
         .replace(/'/g, "&#39;");
 }
 
-// Helper: Convert props to CSS classes and styles
-function applyProps(node, theme = {}) {
-    // FIX: Check if node exists and has props
-    if (!node) return { class: "", style: "" };
-    if (!node.props) return { class: "", style: "" };
-
+// Helper: Build class list from node props
+function buildClasses(node) {
+    if (!node || !node.props) return [];
+    const classes = [];
     const props = node.props;
-    let classes = [];
-    let styles = [];
 
-    // Size mapping
-    const sizeMap = {
-        xs: "text-xs", sm: "text-sm", md: "text-base",
-        lg: "text-lg", xl: "text-xl", "2xl": "text-2xl",
-        "3xl": "text-3xl", "4xl": "text-4xl"
-    };
+    if (props.primary === true || props.primary === "true") classes.push("kv-primary");
+    if (props.danger === true || props.danger === "true") classes.push("kv-danger");
+    
+    // Support custom classes from props
+    if (props.class) classes.push(props.class);
+    if (props.className) classes.push(props.className);
 
-    // Weight mapping
-    const weightMap = {
-        normal: "font-normal", medium: "font-medium",
-        semibold: "font-semibold", bold: "font-bold",
-        extrabold: "font-extrabold"
-    };
+    return classes;
+}
 
-    // Apply size
-    if (props.size && sizeMap[props.size]) {
-        classes.push(sizeMap[props.size]);
-    }
-
-    // Apply weight
-    if (props.weight && weightMap[props.weight]) {
-        classes.push(weightMap[props.weight]);
-    }
-
-    // Apply primary button styling
-    if (props.primary === true || props.primary === "true") {
-        classes.push("btn-primary");
-        classes.push("px-4", "py-2", "rounded-lg", "cursor-pointer");
-    }
-
-    // Apply danger button styling
-    if (props.danger === true || props.danger === "true") {
-        classes.push("btn-danger");
-    }
-
-    // Apply gap for flex containers
-    if (props.gap !== undefined) {
-        styles.push(`gap: ${typeof props.gap === 'number' ? props.gap + 'px' : props.gap}`);
-    }
-
-    // Apply theme colors
-    if (theme && theme.primary && !props.primary) {
-        classes.push(`text-[${theme.primary}]`);
-    }
-
-    return {
-        class: classes.length ? ` class="${classes.join(' ')}"` : "",
-        style: styles.length ? ` style="${styles.join('; ')}"` : ""
-    };
+// Helper: Build gap style (only inline style we allow — gap is layout-specific)
+function buildGapStyle(node) {
+    if (!node || !node.props || node.props.gap === undefined) return "";
+    const gap = typeof node.props.gap === "number" ? node.props.gap + "px" : node.props.gap;
+    return ` style="gap:${gap}"`;
 }
 
 // Main render function - converts node to HTML string
-// Main render function - converts node to HTML string
-function renderNode(node, runtime, theme = {}, path = "") {
+function renderNode(node, runtime, theme, path) {
     if (!node) return "";
 
     const pathAttr = path ? ` data-kv-path="${path}"` : "";
 
-    // --------------------------------------------
     // TEXT NODE
-    // --------------------------------------------
     if (node.type === "text") {
-        const attrs = applyProps(node, theme);
         const value = escapeHtml(node.value !== undefined ? node.value : "");
-        return `<p${pathAttr}${attrs.class}${attrs.style}>${value}</p>`;
+        const variant = node.variant || "body";
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-text", ...extraClasses].join(" ").trim();
+        
+        if (variant === "h1") return `<h1${pathAttr} class="${allClasses} h1">${value}</h1>`;
+        if (variant === "h2") return `<h2${pathAttr} class="${allClasses} h2">${value}</h2>`;
+        if (variant === "h3") return `<h3${pathAttr} class="${allClasses} h3">${value}</h3>`;
+        if (variant === "h4") return `<h4${pathAttr} class="${allClasses} h4">${value}</h4>`;
+        if (variant === "heading") return `<h1${pathAttr} class="${allClasses} heading">${value}</h1>`;
+        if (variant === "subheading") return `<p${pathAttr} class="${allClasses} subheading">${value}</p>`;
+        
+        return `<p${pathAttr} class="${allClasses}">${value}</p>`;
     }
 
-    // --------------------------------------------
     // BUTTON NODE
-    // --------------------------------------------
     if (node.type === "button") {
-        const attrs = applyProps(node, theme);
         const label = escapeHtml(node.label || "Button");
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-button", ...extraClasses].join(" ").trim();
 
         let onclick = "";
-        if (node.events?.click?.operations) {
-            const ops = JSON.stringify(node.events.click.operations).replace(/"/g, '&quot;');
-            const scope = JSON.stringify(node._scope || {}).replace(/"/g, '&quot;');
-            onclick = ` onclick="window.__klover_executeOperations('${ops}', '${scope}')"`;
+        if (node.events?.click) {
+            onclick = ` onclick="window.__klover_executeEvent('${path}', 'click')"`;
         }
 
-        return `<button${pathAttr}${attrs.class}${attrs.style}${onclick}>${label}</button>`;
+        return `<button${pathAttr} class="${allClasses}"${onclick}>${label}</button>`;
     }
 
-    // --------------------------------------------
     // VIDEO NODE
-    // --------------------------------------------
     if (node.type === "video") {
-        const attrs = applyProps(node, theme);
         const src = escapeHtml(node.src || "");
-
         let videoAttrs = ` src="${src}"`;
         if (node.props?.controls) videoAttrs += " controls";
         if (node.props?.autoplay) videoAttrs += " autoplay";
         if (node.props?.loop) videoAttrs += " loop";
         if (node.props?.muted) videoAttrs += " muted";
-
-        return `<video${pathAttr}${videoAttrs}${attrs.class}${attrs.style}></video>`;
+        return `<video${pathAttr} class="kv-video"${videoAttrs}></video>`;
     }
 
-    // --------------------------------------------
     // IMAGE NODE
-    // --------------------------------------------
     if (node.type === "image") {
-        const attrs = applyProps(node, theme);
         const src = escapeHtml(node.src || "");
-        return `<img${pathAttr} src="${src}"${attrs.class}${attrs.style} />`;
+        const alt = escapeHtml(node.props?.alt || "");
+        const extraClasses = buildClasses(node);
+        const allClasses = ["kv-image", ...extraClasses].join(" ").trim();
+        return `<img${pathAttr} class="${allClasses}" src="${src}" alt="${alt}" />`;
     }
 
-    // --------------------------------------------
-    // FLEX CONTAINERS
-    // --------------------------------------------
+    // COLUMN & ROW
     if (node.type === "column" || node.type === "row") {
-        const attrs = applyProps(node, theme);
         const isColumn = node.type === "column";
+        const baseClass = isColumn ? "kv-column" : "kv-row";
+        const gapStyle = buildGapStyle(node);
 
         let childrenHtml = "";
         if (node.children && Array.isArray(node.children)) {
@@ -639,18 +752,10 @@ function renderNode(node, runtime, theme = {}, path = "") {
             }).join("");
         }
 
-        const baseStyle = isColumn 
-            ? "display:flex;flex-direction:column;align-items:center;" 
-            : "display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;";
-        
-        const existingStyle = attrs.style ? attrs.style.replace('style="', '').replace('"', '') : '';
-
-        return `<div${pathAttr}${attrs.class} style="${baseStyle}${existingStyle}">${childrenHtml}</div>`;
+        return `<div${pathAttr} class="${baseClass}"${gapStyle}>${childrenHtml}</div>`;
     }
 
-    // --------------------------------------------
-    // FRAGMENT NODE (No wrapper, just children)
-    // --------------------------------------------
+    // FRAGMENT NODE
     if (node.type === "fragment") {
         if (node.children && Array.isArray(node.children)) {
             return node.children.map((child, i) => {
@@ -664,106 +769,75 @@ function renderNode(node, runtime, theme = {}, path = "") {
     return "";
 }
 
-// V8 Diff-Ready Render Function
+// Entry point
 function render(node, options = {}) {
     const { runtime, theme = {} } = options;
 
     if (!runtime) {
-        console.error("❌ No runtime provided to renderer");
+        console.error("No runtime provided to renderer");
         return "<div>Error: No runtime provided</div>";
     }
 
-    // If node is the raw AST, we must resolve it.
-    // If it's already resolved (has results of evaluate/repeat), we just render it.
     let resolvedTree = node;
-    
-    // We detect if it's resolved by checking for common resolved properties
-    // or we just trust the caller. In Klover V9, build engine resolves first.
-    // But for safety, if it's the raw AST root (type generic/column with isVariable somewhere),
-    // we might need to resolve.
-    // Optimization: resolveTree() is safe to call multiple times in Runtime V8.
     if (runtime.currentTree === null || node === runtime.ast) {
         resolvedTree = runtime.resolveTree();
     }
 
     const html = renderNode(resolvedTree, runtime, theme, "");
-    return `<div class="klover-app">${html || ""}</div>`;
+    return `<div class="kv-app">${html || ""}</div>`;
 }
 
 // Export functions
 
 
                 // --- BOOTSTRAP ---
-                const state = {};
-                const rawAst = {"type":"column","align":"start","children":[{"type":"text","value":"Hello Klover-CLI","isVariable":false,"props":{}}],"props":{}};
-                const theme = {};
+                const state = {"count":0,"likes":42,"showAbout":false,"darkMode":true,"tasks":[{"name":"Ship V9 Engine","done":true},{"name":"Responsive Layouts","done":true},{"name":"Heading System","done":true},{"name":"Publish to NPM","done":false}]};
+                const rawAst = {"type":"column","align":"start","children":[{"type":"state","key":"count","value":0},{"type":"state","key":"likes","value":42},{"type":"state","key":"showAbout","value":false},{"type":"state","key":"darkMode","value":true},{"type":"state","key":"tasks","value":[{"name":"Ship V9 Engine","done":true},{"name":"Responsive Layouts","done":true},{"name":"Heading System","done":true},{"name":"Publish to NPM","done":false}]},{"type":"column","align":"start","children":[{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"Klover","isVariable":false,"props":{},"variant":"h1"},{"type":"text","value":"The UI language that thinks in layouts, not divs.","isVariable":false,"props":{},"variant":"subheading"}],"props":{}},{"type":"row","children":[{"type":"button","label":"Star ⭐","props":{"primary":true},"events":{"click":{"operations":[{"target":"likes","expression":"likes + 1"}]}}},{"type":"button","label":"About","props":{},"events":{"click":{"operations":[{"target":"showAbout","expression":"!showAbout"}]}}}],"props":{}}],"props":{}},{"type":"if","condition":"showAbout","children":[{"type":"column","align":"start","children":[{"type":"text","value":"What is Klover?","isVariable":false,"props":{},"variant":"h2"},{"type":"text","value":"Klover is a lightweight DSL that compiles .kv files into responsive, reactive HTML — no frameworks, no boilerplate. Write what you mean, get what you want.","isVariable":false,"props":{},"variant":"body"},{"type":"button","label":"Close","props":{"danger":true},"events":{"click":{"operations":[{"target":"showAbout","expression":"false"}]}}}],"props":{}}]},{"type":"text","value":"Core Features","isVariable":false,"props":{},"variant":"h2"},{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"⚡","isVariable":false,"props":{},"variant":"h1"},{"type":"text","value":"Instant Builds","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"Compile .kv to production HTML in milliseconds. Zero config, zero wait.","isVariable":false,"props":{},"variant":"body"}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"📐","isVariable":false,"props":{},"variant":"h1"},{"type":"text","value":"Auto Responsive","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"Rows wrap. Columns stack. Typography scales. No media queries needed.","isVariable":false,"props":{},"variant":"body"}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"🧠","isVariable":false,"props":{},"variant":"h1"},{"type":"text","value":"Reactive State","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"Built-in state management with surgical DOM patching. No virtual DOM.","isVariable":false,"props":{},"variant":"body"}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"🎨","isVariable":false,"props":{},"variant":"h1"},{"type":"text","value":"Premium Defaults","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"Glassmorphism, Inter font, and dark mode out of the box.","isVariable":false,"props":{},"variant":"body"}],"props":{}}],"props":{}},{"type":"text","value":"Interactive Demo","isVariable":false,"props":{},"variant":"h2"},{"type":"text","value":"Try clicking the buttons below — state updates are live.","isVariable":false,"props":{},"variant":"subheading"},{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"Counter","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"count","isVariable":true,"props":{},"variant":"h1"},{"type":"row","children":[{"type":"button","label":"Increment","props":{"primary":true},"events":{"click":{"operations":[{"target":"count","expression":"count + 1"}]}}},{"type":"button","label":"Reset","props":{"danger":true},"events":{"click":{"operations":[{"target":"count","expression":"0"}]}}}],"props":{}}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"Community","isVariable":false,"props":{},"variant":"h3"},{"type":"text","value":"likes","isVariable":true,"props":{},"variant":"h1"},{"type":"text","value":"stars on the project","isVariable":false,"props":{},"variant":"subheading"},{"type":"button","label":"Add Star ⭐","props":{"primary":true},"events":{"click":{"operations":[{"target":"likes","expression":"likes + 1"}]}}}],"props":{}}],"props":{}},{"type":"text","value":"Roadmap","isVariable":false,"props":{},"variant":"h2"},{"type":"repeat","source":"tasks","itemName":"item","children":[{"type":"row","children":[{"type":"text","value":"item.name","isVariable":true,"props":{},"variant":"h4"},{"type":"if","condition":"item.done","children":[{"type":"text","value":"✅ Done","isVariable":false,"props":{},"variant":"body"}]},{"type":"if","condition":"!item.done","children":[{"type":"text","value":"🚧 In Progress","isVariable":false,"props":{},"variant":"body"}]}],"props":{}}]},{"type":"row","children":[{"type":"column","align":"start","children":[{"type":"text","value":"Built by","isVariable":false,"props":{},"variant":"h4"},{"type":"text","value":"Bhumi Jha & Yugank Das","isVariable":false,"props":{},"variant":"body"}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"Version","isVariable":false,"props":{},"variant":"h4"},{"type":"text","value":"Klover V9 — Published on NPM","isVariable":false,"props":{},"variant":"body"}],"props":{}},{"type":"column","align":"start","children":[{"type":"text","value":"License","isVariable":false,"props":{},"variant":"h4"},{"type":"text","value":"MIT — Free and Open Source","isVariable":false,"props":{},"variant":"body"}],"props":{}}],"props":{}}],"props":{}}],"props":{}};
+                const theme = "dark";
                 const components = {};
 
                 // Initialize client-side runtime
                 const kRuntime = new Runtime(rawAst, components);
                 kRuntime.state = state;
+                kRuntime.resolveTree(); // MANDATORY: Initialize the internal tree for path lookups
 
-                // Shared render function
-                function refresh(preResolvedTree) {
+                // Always do full re-render (reliable across all state changes)
+                function refresh(newTree) {
                     try {
                         const root = document.getElementById("root");
-                        const newTree = preResolvedTree || kRuntime.resolveTree();
+                        const resolvedTree = newTree || kRuntime.resolveTree();
                         
-                        if (newTree._changes && newTree._changes.length > 0) {
-                            console.log("⚡ Klover V9: Applying surgical patches...");
-                            applyPatches(newTree._changes, root.firstElementChild);
+                        // Call renderNode directly to avoid getting the .kv-app wrapper again
+                        const html = renderNode(resolvedTree, kRuntime, theme, "");
+                        
+                        if (root.firstElementChild) {
+                            root.firstElementChild.innerHTML = html;
                         } else {
-                            console.log("🔄 Klover V9: Full re-render triggered");
-                            const html = render(newTree, { runtime: kRuntime, theme });
-                            root.innerHTML = html;
+                            root.innerHTML = render(resolvedTree, { runtime: kRuntime, theme });
                         }
                     } catch (err) {
                         console.error("Refresh Error:", err);
-                        // Fallback to full render
+                        // Fallback: full re-render
                         const html = render(kRuntime.resolveTree(), { runtime: kRuntime, theme });
                         document.getElementById("root").innerHTML = html;
                     }
                 }
 
-                function applyPatches(changes, rootEl) {
-                    changes.forEach(change => {
-                        try {
-                            const el = rootEl.querySelector(`[data-kv-path="${change.path}"]`) || 
-                                       (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
-
-                            if (change.type === "changed") {
-                                if (el) {
-                                    if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
-                                        el.textContent = change.new;
-                                    }
-                                }
-                            } else if (change.type === "replaced" || change.type === "added" || change.type === "removed") {
-                                // For now, if complex changes happen, just refresh the nearest identifiable parent or full app
-                                throw new Error("Complex change detected");
-                            }
-                        } catch (e) {
-                            refresh();
-                        }
-                    });
-                }
+                // Link runtime to refresh
+                kRuntime.onRender = refresh;
 
                 // Global state updaters
-                window.__klover_executeOperations = function(opsJson, scopeJson) {
+                window.__klover_executeEvent = function(path, type) {
                     try {
-                        const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
-                        const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
-                        kRuntime.executeOperations(ops, scope);
+                        kRuntime.executeEvent(path, type);
                     } catch (err) {
-                        console.error("Klover Ops Error:", err);
+                        console.error("Klover Event Error:", err);
                     }
                 };
 
                 window.__klover_setState = function(target, expr) {
                     kRuntime.setState(target, expr);
                 };
-
-                // Bind update to render cycle
-                kRuntime.onRender = refresh;
 
                 console.log("Klover Live V9 Ready");
             } catch (bootstrapErr) {

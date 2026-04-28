@@ -98,7 +98,7 @@ class Runtime {
             } else {
                 this.state[actualTarget] = newValue;
             }
-            console.log(`🔄 State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
+            console.log(`State updated: ${actualTarget} = ${JSON.stringify(newValue)}`);
         }
 
         if (this.onRender) {
@@ -136,7 +136,7 @@ class Runtime {
                     } else {
                         this.state[cleanTarget] = newValue;
                     }
-                    console.log(`🔄 Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
+                    console.log(`Operation: ${cleanTarget} = ${JSON.stringify(newValue)}`);
                     changed = true;
                 }
             }
@@ -326,6 +326,41 @@ class Runtime {
         return newTree;
     }
 
+
+    // -------------------------
+    // EVENT EXECUTION (Path-Based)
+    // -------------------------
+    getNodeByPath(path, tree = this.currentTree) {
+        if (!path || !tree) return tree;
+        
+        const parts = path.split(/[.\[\]]+/).filter(Boolean);
+        let current = tree;
+
+        for (const part of parts) {
+            if (!current) return null;
+            if (part === "children" || part === "root") continue;
+            
+            if (current.children && !isNaN(part)) {
+                current = current.children[parseInt(part)];
+            } else if (current[part]) {
+                current = current[part];
+            } else {
+                return null;
+            }
+        }
+        return current;
+    }
+
+    executeEvent(path, eventType) {
+        const node = this.getNodeByPath(path);
+        if (!node || !node.events || !node.events[eventType]) return;
+
+        const { operations } = node.events[eventType];
+        const scope = node._scope || {};
+        
+        console.log(`⚡ Executing ${eventType} event at path: ${path}`);
+        this.executeOperations(operations, scope);
+    }
 
     // -------------------------
     // HELPER: Get current state

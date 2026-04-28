@@ -6,22 +6,22 @@ const { render } = require("./renderer/render");
 
 function build(inputFile = "input.kv", outputFile = "output.html", options = {}) {
     try {
-        console.log("🔨 Klover Build Engine");
+        console.log("Klover Build Engine");
 
         // 1. Read and parse
-        console.log(`📖 Reading: ${inputFile}`);
+        console.log(`Reading: ${inputFile}`);
         const input = fs.readFileSync(inputFile, "utf-8");
         const parsed = parse(input);
-        console.log("✅ Parse complete");
+        console.log("Parse complete");
 
         // 2. Initialize runtime
         const runtime = new Runtime(parsed.tree, parsed.components);
         runtime.init();
-        console.log("✅ Runtime initialized");
+        console.log("Runtime initialized");
 
         // 3. Resolve initial tree (Expand loops, variables, components)
         const resolvedTree = runtime.resolveTree();
-        console.log("✅ Tree resolved");
+        console.log("Tree resolved");
 
         // 4. Initial Render
         const initialHtml = render(resolvedTree, {
@@ -37,111 +37,229 @@ function build(inputFile = "input.kv", outputFile = "output.html", options = {})
         const html = `<!DOCTYPE html>
 <html>
 <head>
-    <title>Klover App - ${path.basename(inputFile)}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: {
-                            DEFAULT: '#3b82f6',
-                            hover: '#2563eb',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${parsed.title || `Klover App - ${path.basename(inputFile)}`}</title>
+    ${parsed.icon ? `<link rel="icon" href="${parsed.icon}">` : ""}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ===== RESET ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ===== BASE ===== */
         :root {
             --primary: #3b82f6;
-            --primary-dark: #2563eb;
+            --primary-hover: #2563eb;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
             --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --surface: rgba(15, 23, 42, 0.8);
+            --border: rgba(255, 255, 255, 0.08);
             --text: #f8fafc;
             --text-muted: #94a3b8;
+            --radius: 12px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
         }
-        body { 
-            background: radial-gradient(circle at top left, #1e293b, #0f172a);
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+
+        body {
+            background: radial-gradient(circle at top left, #1e293b 0%, #0f172a 100%);
             min-height: 100vh;
-            margin: 0;
-            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            font-family: var(--font);
             color: var(--text);
+            margin: 0;
             overflow-x: hidden;
         }
-        .klover-app { 
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 2rem; 
-            padding: 3rem; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            min-width: 500px;
-            max-width: 95%;
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+        /* Ambient Glow */
+        body::before {
+            content: "";
+            position: fixed;
+            top: -10%;
+            right: -10%;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+
+        /* ===== APP CONTAINER ===== */
+        .kv-app {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 48px;
+            background: var(--surface);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            animation: kvFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes kvFadeIn {
+            from { opacity: 0; transform: translateY(16px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        p { margin-bottom: 0.5rem; line-height: 1.5; }
-        button { 
+
+        /* ===== TYPOGRAPHY ===== */
+        .kv-text {
+            margin: 0;
+            line-height: 1.6;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        .kv-text.h1 {
+            font-size: 40px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .kv-text.h2 {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: -0.015em;
+        }
+
+        .kv-text.h3 {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .kv-text.h4 {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .kv-text.heading {
+            font-size: 40px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .kv-text.subheading {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ===== LAYOUT ===== */
+        .kv-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .kv-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .kv-row > * {
+            flex: 1;
+            min-width: 240px;
+        }
+
+        /* ===== BUTTON ===== */
+        .kv-button {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.6rem 1.2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.875rem;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
             text-transform: uppercase;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.03em;
         }
-        button:hover { 
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        button:active { transform: translateY(0); }
-        
-        .btn-primary {
-            background: var(--primary) !important;
-            border: none !important;
-            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark) !important;
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.23);
-        }
-        
-        .btn-danger {
-            background: #ef4444 !important;
-            border: none !important;
-        }
-        .btn-danger:hover { background: #dc2626 !important; }
 
-        img {
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
+        .kv-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        img:hover { transform: scale(1.02); }
 
+        .kv-button:active {
+            transform: translateY(0);
+        }
+
+        .kv-button.kv-primary {
+            background: var(--primary);
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+
+        .kv-button.kv-primary:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .kv-button.kv-danger {
+            background: var(--danger);
+            border-color: transparent;
+        }
+
+        .kv-button.kv-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        /* ===== IMAGE ===== */
+        .kv-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+            object-fit: cover;
+        }
+
+        /* ===== VIDEO ===== */
+        .kv-video {
+            width: 100%;
+            max-width: 100%;
+            border-radius: var(--radius);
+        }
+
+        /* ===== TRANSITIONS ===== */
         [data-kv-path] {
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 768px) {
+            body { padding: 16px; }
+
+            .kv-app { padding: 24px; border-radius: 16px; }
+
+            .kv-row { flex-direction: column; }
+            .kv-row > * { min-width: 100%; }
+
+            .kv-text.h1, .kv-text.heading { font-size: 28px; }
+            .kv-text.h2 { font-size: 24px; }
+            .kv-text.h3 { font-size: 20px; }
+            .kv-text.h4 { font-size: 17px; }
+            .kv-text.subheading { font-size: 16px; }
         }
     </style>
 </head>
@@ -170,68 +288,45 @@ function build(inputFile = "input.kv", outputFile = "output.html", options = {})
                 // Initialize client-side runtime
                 const kRuntime = new Runtime(rawAst, components);
                 kRuntime.state = state;
+                kRuntime.resolveTree(); // MANDATORY: Initialize the internal tree for path lookups
 
-                // Shared render function
-                function refresh(preResolvedTree) {
+                // Always do full re-render (reliable across all state changes)
+                function refresh(newTree) {
                     try {
                         const root = document.getElementById("root");
-                        const newTree = preResolvedTree || kRuntime.resolveTree();
+                        const resolvedTree = newTree || kRuntime.resolveTree();
                         
-                        if (newTree._changes && newTree._changes.length > 0) {
-                            console.log("⚡ Klover V9: Applying surgical patches...");
-                            applyPatches(newTree._changes, root.firstElementChild);
+                        // Call renderNode directly to avoid getting the .kv-app wrapper again
+                        const html = renderNode(resolvedTree, kRuntime, theme, "");
+                        
+                        if (root.firstElementChild) {
+                            root.firstElementChild.innerHTML = html;
                         } else {
-                            console.log("🔄 Klover V9: Full re-render triggered");
-                            const html = render(newTree, { runtime: kRuntime, theme });
-                            root.innerHTML = html;
+                            root.innerHTML = render(resolvedTree, { runtime: kRuntime, theme });
                         }
                     } catch (err) {
                         console.error("Refresh Error:", err);
-                        // Fallback to full render
+                        // Fallback: full re-render
                         const html = render(kRuntime.resolveTree(), { runtime: kRuntime, theme });
                         document.getElementById("root").innerHTML = html;
                     }
                 }
 
-                function applyPatches(changes, rootEl) {
-                    changes.forEach(change => {
-                        try {
-                            const el = rootEl.querySelector(\`[data-kv-path="\${change.path}"]\`) || 
-                                       (rootEl.getAttribute("data-kv-path") === change.path ? rootEl : null);
-
-                            if (change.type === "changed") {
-                                if (el) {
-                                    if (change.path.endsWith(".value") || change.path.endsWith(".label")) {
-                                        el.textContent = change.new;
-                                    }
-                                }
-                            } else if (change.type === "replaced" || change.type === "added" || change.type === "removed") {
-                                // For now, if complex changes happen, just refresh the nearest identifiable parent or full app
-                                throw new Error("Complex change detected");
-                            }
-                        } catch (e) {
-                            refresh();
-                        }
-                    });
-                }
+                // Link runtime to refresh
+                kRuntime.onRender = refresh;
 
                 // Global state updaters
-                window.__klover_executeOperations = function(opsJson, scopeJson) {
+                window.__klover_executeEvent = function(path, type) {
                     try {
-                        const ops = typeof opsJson === 'string' ? JSON.parse(opsJson.replace(/&quot;/g, '"')) : opsJson;
-                        const scope = typeof scopeJson === 'string' ? JSON.parse(scopeJson.replace(/&quot;/g, '"')) : (scopeJson || {});
-                        kRuntime.executeOperations(ops, scope);
+                        kRuntime.executeEvent(path, type);
                     } catch (err) {
-                        console.error("Klover Ops Error:", err);
+                        console.error("Klover Event Error:", err);
                     }
                 };
 
                 window.__klover_setState = function(target, expr) {
                     kRuntime.setState(target, expr);
                 };
-
-                // Bind update to render cycle
-                kRuntime.onRender = refresh;
 
                 console.log("Klover Live V9 Ready");
             } catch (bootstrapErr) {
@@ -243,11 +338,11 @@ function build(inputFile = "input.kv", outputFile = "output.html", options = {})
 </html>`;
 
         fs.writeFileSync(outputFile, html);
-        console.log(`✅ Build complete: ${outputFile}`);
+        console.log(`Build complete: ${outputFile}`);
         return true;
 
     } catch (error) {
-        console.error("❌ Error:", error.message);
+        console.error("Error:", error.message);
         console.error(error.stack);
         return false;
     }

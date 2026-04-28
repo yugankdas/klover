@@ -2,7 +2,11 @@
     "scopeName": "source.klover",
     "patterns": [
         {
-            "match": "\\b(text|button|column|row|image|video|state|repeat|if|component)\\b",
+            "name": "comment.line.klover",
+            "match": "//.*$"
+        },
+        {
+            "match": "\\b(text|button|column|row|image|video|state|repeat|if|component|theme|title|icon|favicon)\\b",
             "name": "keyword.control.klover"
         },
         {
@@ -14,12 +18,24 @@
             "name": "keyword.function.klover"
         },
         {
+            "match": "\\b(h1|h2|h3|h4|heading|subheading|primary|danger|center|controls|autoplay|muted|loop)\\b",
+            "name": "support.constant.klover"
+        },
+        {
             "match": "\\b[a-zA-Z_]+(?==)",
             "name": "variable.parameter.klover"
         },
         {
+            "match": "\\b(true|false|null)\\b",
+            "name": "constant.language.klover"
+        },
+        {
             "match": "\\b\\d+\\b",
             "name": "constant.numeric.klover"
+        },
+        {
+            "match": "\\bas\\b",
+            "name": "keyword.operator.klover"
         }
     ]
 }

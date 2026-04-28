@@ -2,7 +2,7 @@
     "name": "klover-vscode",
     "displayName": "Klover",
     "description": "Klover language support",
-    "version": "0.0.1",
+    "version": "0.2.0",
     "publisher": "Yugank Das, Bhumi Jha",
     "engines": {
         "vscode": "^1.80.0"

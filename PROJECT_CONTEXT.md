@@ -1,65 +1,69 @@
-# Klover Project Context (V7: The DX Update)
+# Klover Project Context (V9: The Premium UI Update)
 
-Klover is a state-aware UI system that prioritizes Developer Experience (DX) through robust tooling and a decoupled, modular architecture.
+Klover is a state-aware UI system that prioritizes Developer Experience (DX) and Visual Excellence through a robust, responsive engine and a modular architecture.
 
-## 1. V7: Developer Experience (DX) Features
+## 1. V9: The Responsive & Semantic Update
+
+### V9 Responsive Engine
+The core rendering layer now features a premium "Moonlight Dark" theme by default:
+- **Glassmorphism**: Built-in support for backdrop blurs and semi-transparent surfaces.
+- **Ambient Lighting**: Automatic radial gradients and glow effects for a high-end look.
+- **Flex-Wrap System**: Rows automatically wrap on small screens, and columns are fully responsive without media queries.
+
+### Semantic Typography
+Klover V9 implements a full typography hierarchy:
+- **Variants**: `h1`, `h2`, `h3`, `h4`, `heading`, and `subheading`.
+- **Scaling**: Fluid typography that scales down automatically for mobile devices.
+
+### Page Metadata
+Users can now control document-level metadata directly from the DSL:
+- **`title "..."`**: Sets the browser tab title.
+- **`icon "..."`**: Sets the page favicon.
+
+## 2. Tooling & CLI
 
 ### The Klover CLI
-The project now includes a centralized Command Line Interface located in `./cli/index.js`.
-- **`klover build`**: Executes a one-time build of `input.kv` to `output.html`.
-- **`klover dev [file]`**: Enables **Watch Mode**. Uses `chokidar` to monitor file changes and automatically re-compiles the project.
-- **`klover run <file>`**: Compiles a specific `.kv` file.
-- **`klover debug`**: Compiles with internal logging enabled for troubleshooting.
+The project includes a centralized Command Line Interface located in `./cli/index.js`.
+- **`klover build`**: Executes a one-time build.
+- **`klover dev [file]`**: Enables **Watch Mode** using `chokidar`.
+- **`klover run <file>`**: Compiles a specific `.kv` file (e.g., `showcase.kv`).
 
 ### The Build Engine (`index.js`)
-The core pipeline has been refactored from a standalone script into a reusable **Build Engine**:
-- **Exported API**: Exports a `build(inputFile, outputFile)` function for programmatic use.
-- **Error Resilience**: Implements refined `try/catch` blocks to provide user-friendly error messages in the console, replacing raw stack traces.
+The core pipeline is a reusable **Build Engine**:
+- **Exported API**: Programmatic `build(inputFile, outputFile)` function.
+- **Embedded Bootstrap**: Automatically bundles the Runtime, Renderer, and State into the output HTML for a zero-dependency deployment.
 
-## 2. Language Specification (DSL)
-
-### Component Lifecycle
-- **Definition**: `component [Name]:` defines a template.
-- **Initialization**: The parser stores these in a `components` registry.
-- **Handover**: The registry is passed directly to the renderer to be instantiated.
-
-### Event & Operation Logic
-- **Chained Operations**: Supports `onClick=set(a, 1) & set(b, 2)`.
-- **Dynamic Resolution**: Expressions are resolved at runtime in the browser (or target environment) using the logic state extracted during the parse phase.
-
-## 3. Architecture Specification (V7)
+## 3. Architecture Specification
 
 ### Layer 1: The Parser (`parser/parse.js`)
 - **Indentation-First**: Stack-based hierarchy management.
-- **Feature Rich**: Supports `repeat`, `if`, `video`, and advanced prop extraction.
+- **Robust Tokenizer**: Handles complex expressions and nested parentheses.
+- **Metadata Support**: Captures `title`, `icon`, and `theme` globally.
 
 ### Layer 2: The Runtime (`runtime/runtime.js`)
-- **Logical Source of Truth**: Manages state and variable resolution.
-- **Scoped Execution**: Handles global and item-level scopes (for `repeat` loops).
+- **Logical Source of Truth**: Manages state and path-based event resolution.
+- **V8 Sync**: Ensures the internal tree is resolved and initialized for instant event response.
 
 ### Layer 3: The Renderer (`renderer/render.js`)
-- **Pure Presentation**: A decoupled module (Teammate Managed) that renders the pre-resolved tree.
+- **Class-Based CSS**: Pure CSS architecture using a consistent design system.
+- **Accessibility**: Support for `alt` text and custom `class` pass-through.
 
-## 4. File Hierarchy (V7)
+## 4. File Hierarchy (V9)
 
 ```text
 klover/
-├── cli/
-│   └── index.js          # Unified Command Line Interface
-├── parser/
-│   └── parse.js          # DSL Parser & AST Generator
-├── runtime/
-│   └── runtime.js        # Logic Engine & State Manager
-├── renderer/
-│   └── render.js         # (Teammate Managed) Resolved Tree Renderer
-├── shared/
-│   └── schema.js         # Unified AST Factory Layer
-├── index.js              # Reusable Build Engine
-├── input.kv              # Primary DSL Source
-└── package.json          # Project Registry (v1.0.0 with CLI linked)
+├── cli/            # CLI interface
+├── parser/         # DSL parser & AST generator
+├── runtime/        # State management & logic engine
+├── renderer/       # CSS system & HTML generation
+├── shared/         # AST factory
+├── plugins/        # Extensible plugin system
+├── index.js        # Core build engine
+├── showcase.kv     # Feature demonstration
+└── package.json    # Project registry (v1.1.0)
 ```
 
 ## 5. Design Philosophy
-- **Developer First**: Tools like `dev` mode reduce the feedback loop between code and visual results.
-- **Minimalist Core**: Zero external dependencies in the compiler (except `chokidar` for the CLI).
-- **Extensible AST**: The V7 schema is robust enough to support advanced features like nested components and complex animations.
+- **Wow First Glance**: Every Klover app should look premium out of the box.
+- **Zero Frameworks**: No React, no Vue, no Tailwind dependencies in the final output.
+- **Hackable**: A modular codebase that is easy to extend with new components or plugins.
